@@ -57,8 +57,9 @@ func (db *roleConnection) FindRoleByName(ctx context.Context, name string) (enti
 }
 
 func (db *roleConnection) FindRoleIDByName(ctx context.Context, name string) (string, error) {
+	var role entity.Role
 	var roleID string
-	ux := db.connection.Select("id").Where("name = ?", name).Scan(&roleID)
+	ux := db.connection.Select("id").Where("name = ?", name).Take(&role).Scan(&roleID)
 
 	if ux.Error != nil {
 		return "", ux.Error

@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"teach-tech-ai/entity"
 
 	"github.com/google/uuid"
@@ -14,7 +13,6 @@ type UserRepository interface {
 	GetAllUser(ctx context.Context) ([]entity.User, error)
 	FindUserByEmail(ctx context.Context, email string) (entity.User, error)
 	FindUserByID(ctx context.Context, userID uuid.UUID) (entity.User, error)
-	FindRoleIDByName(ctx context.Context, name string) (string, error)
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
 	UpdateUser(ctx context.Context, user entity.User) error
 }
@@ -79,19 +77,4 @@ func (db *userConnection) UpdateUser(ctx context.Context, user entity.User) erro
 		return uc.Error
 	}
 	return nil
-}
-
-func (db *userConnection) FindRoleIDByName(ctx context.Context, name string) (string, error) {
-	var roleID string
-	ux := db.connection.Select("id").Where("name = ?", name).Scan(&roleID)
-
-	if ux.Error != nil {
-		return "", ux.Error
-	}
-
-	if ux.RowsAffected == 0 {
-		return "", fmt.Errorf("role with name '%s' not found", name)
-	}
-
-	return roleID, nil
 }
