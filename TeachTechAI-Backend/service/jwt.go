@@ -30,14 +30,14 @@ type jwtService struct {
 func NewJWTService() JWTService {
 	return &jwtService{
 		secretKey: getSecretKey(),
-		issuer:    "Template",
+		issuer:    "teachtechai",
 	}
 }
 
 func getSecretKey() string {
 	secretKey := os.Getenv("JWT_SECRET")
 	if secretKey == "" {
-		secretKey = "Template"
+		secretKey = "teachtechai"
 	}
 	return secretKey
 }
