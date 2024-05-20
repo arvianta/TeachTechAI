@@ -37,7 +37,7 @@ func NewUserService(ur repository.UserRepository, rr repository.RoleRepository) 
 func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateDto) (entity.User, error) {
 	user := entity.User{}
 	err := smapping.FillStruct(&user, smapping.MapFields(userDTO))
-	user.RoleID, _ = us.FindRoleIDByName(ctx, "user") //TODO
+	user.RoleID, _ = us.userRepository.FindRoleIDByName(ctx, "user") //TODO
 	if err != nil {
 		return user, err
 	}
@@ -50,10 +50,6 @@ func (us *userService) GetAllUser(ctx context.Context) ([]entity.User, error) {
 
 func (us *userService) FindUserByEmail(ctx context.Context, email string) (entity.User, error) {
 	return us.userRepository.FindUserByEmail(ctx, email)
-}
-
-func (us *userService) FindRoleIDByName(ctx context.Context, name string) (string, error) {
-	return us.userRepository.FindRoleIDByName(ctx, name)
 }
 
 func (us *userService) CheckUser(ctx context.Context, email string) (bool, error) {

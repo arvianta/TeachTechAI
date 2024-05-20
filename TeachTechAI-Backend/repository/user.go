@@ -89,7 +89,6 @@ func (db *userConnection) FindRoleIDByName(ctx context.Context, name string) (st
 		return "", ux.Error
 	}
 
-	// Check if a row was actually found (optional)
 	if ux.RowsAffected == 0 {
 		return "", fmt.Errorf("role with name '%s' not found", name)
 	}
