@@ -35,6 +35,12 @@ func NewRoleController(rs service.RoleService) RoleController {
 func (rc *roleController) CreateRole(ctx *gin.Context) {
 	var role dto.RoleCreateDto
 	err := ctx.ShouldBind(&role)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Login", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+	
 	checkRole, _ := rc.roleService.CheckRole(ctx.Request.Context(), role.Name)
 	if checkRole {
 		res := common.BuildErrorResponse("Role Sudah Ada", "false", common.EmptyObj{})

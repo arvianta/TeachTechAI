@@ -18,8 +18,9 @@ type User struct {
 	ProfilePicture string    `gorm:"type:varchar(255);" json:"profile_picture"`
 	AsalInstansi   string    `gorm:"type:varchar(255);" json:"asal_instansi"`
 	DateOfBirth    time.Time `gorm:"type:date;" json:"date_of_birth"`
-	CreatedAt      time.Time `gorm:"type:timestamp;not_null" json:"created_at"`
-	UpdatedAt      time.Time `gorm:"type:timestamp;not_null" json:"updated_at"`
+	
+	Timestamp
+
 	RoleID         string    `gorm:"type:char(36);not_null" json:"role_id"`
 	Role           Role      `gorm:"foreignkey:RoleID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
 }

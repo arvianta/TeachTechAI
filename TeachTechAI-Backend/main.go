@@ -27,7 +27,7 @@ func main() {
 	var (
 		db *gorm.DB = config.SetupDatabaseConnection()
 
-		// jwtService service.JWTService = service.NewJWTService()
+		jwtService service.JWTService = service.NewJWTService()
 
 		roleRepository repository.RoleRepository = repository.NewRoleRepository(db)
 		roleService    service.RoleService       = service.NewRoleService(roleRepository)
@@ -35,7 +35,7 @@ func main() {
 
 		userRepository repository.UserRepository = repository.NewUserRepository(db)
 		userService    service.UserService       = service.NewUserService(userRepository, roleRepository)
-		userController controller.UserController = controller.NewUserController(userService)
+		userController controller.UserController = controller.NewUserController(userService, jwtService)
 	)
 
 	config.AutoMigrateDatabase(db)
@@ -43,7 +43,7 @@ func main() {
 	fmt.Println("Migration success!")
 
 	server := gin.Default()
-	routes.UserRoutes(server, userController)
+	routes.UserRoutes(server, userController, jwtService)
 	routes.RoleRoutes(server, roleController)
 
 	port := os.Getenv("PORT")
