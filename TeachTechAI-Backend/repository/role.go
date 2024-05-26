@@ -14,7 +14,7 @@ type RoleRepository interface {
 	GetAllRole(ctx context.Context) ([]entity.Role, error)
 	FindRoleByName(ctx context.Context, name string) (entity.Role, error)
 	FindRoleIDByName(ctx context.Context, name string) (string, error)
-	FindRoleNameByID(ctx context.Context, name string) (string, error)
+	FindRoleNameByID(id uuid.UUID) (string, error)
 }
 
 type roleConnection struct {
@@ -71,7 +71,7 @@ func (db *roleConnection) FindRoleIDByName(ctx context.Context, name string) (st
 	return roleID, nil
 }
 
-func (db *roleConnection) FindRoleNameByID(ctx context.Context, id string) (string, error) {
+func (db *roleConnection) FindRoleNameByID(id uuid.UUID) (string, error) {
 	var role entity.Role
 	var roleName string
 	ux := db.connection.Select("name").Where("id = ?", id).Take(&role).Scan(&roleName)

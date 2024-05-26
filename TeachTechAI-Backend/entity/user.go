@@ -18,6 +18,10 @@ type User struct {
 	ProfilePicture string    `gorm:"type:varchar(255);" json:"profile_picture"`
 	AsalInstansi   string    `gorm:"type:varchar(255);" json:"asal_instansi"`
 	DateOfBirth    time.Time `gorm:"type:date;" json:"date_of_birth"`
+	SessionToken   string    `gorm:"type:varchar(255);" json:"session_token"`
+	STExpires 	   time.Time `gorm:"type:datetime;" json:"st_expires"`
+	RefreshToken   string    `gorm:"type:varchar(255);" json:"refresh_token"`
+	RTExpires 	   time.Time `gorm:"type:datetime;" json:"rt_expires"`
 	
 	Timestamp
 

@@ -9,15 +9,17 @@ import (
 	"teach-tech-ai/service"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type UserController interface {
 	RegisterUser(ctx *gin.Context)
-	GetAllUser(ctx *gin.Context)
 	LoginUser(ctx *gin.Context)
-	DeleteUser(ctx *gin.Context)
-	UpdateUser(ctx *gin.Context)
 	MeUser(ctx *gin.Context)
+	RefreshUser(ctx *gin.Context)
+	GetAllUser(ctx *gin.Context)
+	UpdateUser(ctx *gin.Context)
+	DeleteUser(ctx *gin.Context)
 }
 
 type userController struct {
@@ -58,19 +60,7 @@ func (uc *userController) RegisterUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-func (uc *userController) GetAllUser(ctx *gin.Context) {
-	result, err := uc.userService.GetAllUser(ctx.Request.Context())
-	if err != nil {
-		res := common.BuildErrorResponse("Gagal Mendapatkan List User", err.Error(), common.EmptyObj{})
-		ctx.JSON(http.StatusBadRequest, res)
-		return
-	}
-
-	res := common.BuildResponse(true, "Berhasil Mendapatkan List User", result)
-	ctx.JSON(http.StatusOK, res)
-}
-
-func(uc *userController) LoginUser(ctx *gin.Context) {
+func (uc *userController) LoginUser(ctx *gin.Context) {
 	var userLoginDTO dto.UserLoginDTO
 	err := ctx.ShouldBind(&userLoginDTO)
 	if err != nil {
@@ -93,23 +83,40 @@ func(uc *userController) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	role, err := uc.userService.FindUserRoleByRoleID(ctx.Request.Context(), user.RoleID)
+	roleID, err := uuid.Parse(user.RoleID)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Login", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+	}
+	
+	role, err := uc.userService.FindUserRoleByRoleID(roleID)
 	if err != nil {
 		response := common.BuildErrorResponse("Gagal Login", err.Error(), common.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 	}
 
-	token := uc.jwtService.GenerateToken(user.ID, role)
+	sessionToken, refreshToken, err := uc.jwtService.GenerateToken(user.ID, role)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Login", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+	}
 	userResponse := entity.Authorization{
-		Token: token,
+		SessionToken: sessionToken,
+		RefreshToken: refreshToken,
 		Role: role,
+	}
+
+	err = uc.userService.StoreUserToken(user.ID, sessionToken, refreshToken)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Login", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 	}
 	
 	response := common.BuildResponse(true, "Berhasil Login", userResponse)
 	ctx.JSON(http.StatusOK, response)
 }
 
-func(uc *userController) MeUser(ctx *gin.Context) {
+func (uc *userController) MeUser(ctx *gin.Context) {
 	token := ctx.MustGet("token").(string)
 	userID, err := uc.jwtService.GetUserIDByToken(token)
 	if err != nil {
@@ -129,7 +136,66 @@ func(uc *userController) MeUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-func(uc *userController) UpdateUser(ctx *gin.Context) {
+func (uc *userController) RefreshUser(ctx *gin.Context) {
+	var refreshToken dto.UserRefreshDTO
+	err := ctx.ShouldBind(&refreshToken)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Refresh Token", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	newSessionToken, newRefreshToken, err := uc.jwtService.RefreshToken(refreshToken.RefreshToken)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Refresh Token", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	//TODO: invalidate old refresh token
+	//implement here
+
+	role, err := uc.jwtService.GetUserRoleByToken(newSessionToken)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Refresh Token", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	userID, err := uc.jwtService.GetUserIDByToken(newSessionToken)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Refresh Token", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	err = uc.userService.StoreUserToken(userID, newSessionToken, newRefreshToken)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Refresh Token", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+	}
+
+	res := common.BuildResponse(true, "Berhasil Refresh Token", entity.Authorization{
+		SessionToken: newSessionToken,
+		RefreshToken: newRefreshToken,
+		Role: role,
+	})
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (uc *userController) GetAllUser(ctx *gin.Context) {
+	result, err := uc.userService.GetAllUser(ctx.Request.Context())
+	if err != nil {
+		res := common.BuildErrorResponse("Gagal Mendapatkan List User", err.Error(), common.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := common.BuildResponse(true, "Berhasil Mendapatkan List User", result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (uc *userController) UpdateUser(ctx *gin.Context) {
 	var user dto.UserUpdateDto
 	err := ctx.ShouldBind(&user)
 	if err != nil {
@@ -157,7 +223,7 @@ func(uc *userController) UpdateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-func(uc *userController) DeleteUser(ctx *gin.Context) {
+func (uc *userController) DeleteUser(ctx *gin.Context) {
 	token := ctx.MustGet("token").(string)
 	userID, err := uc.jwtService.GetUserIDByToken(token)
 

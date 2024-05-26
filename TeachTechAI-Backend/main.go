@@ -27,14 +27,15 @@ func main() {
 	var (
 		db *gorm.DB = config.SetupDatabaseConnection()
 
-		jwtService service.JWTService = service.NewJWTService()
-
+		
 		roleRepository repository.RoleRepository = repository.NewRoleRepository(db)
-		roleService    service.RoleService       = service.NewRoleService(roleRepository)
-		roleController controller.RoleController = controller.NewRoleController(roleService)
-
 		userRepository repository.UserRepository = repository.NewUserRepository(db)
+		
+		jwtService 	   service.JWTService 		 = service.NewJWTService(userRepository, roleRepository)
 		userService    service.UserService       = service.NewUserService(userRepository, roleRepository)
+		roleService    service.RoleService       = service.NewRoleService(roleRepository)
+		
+		roleController controller.RoleController = controller.NewRoleController(roleService, userService)
 		userController controller.UserController = controller.NewUserController(userService, jwtService)
 	)
 

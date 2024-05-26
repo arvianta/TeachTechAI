@@ -13,6 +13,7 @@ type Timestamp struct {
 }
 
 type Authorization struct {
-	Token string `json:"token"`
-	Role  string `json:"role"`
+	SessionToken string `json:"session_token"`
+	RefreshToken string `json:"refresh_token"`
+	Role  		 string `json:"role"`
 }
