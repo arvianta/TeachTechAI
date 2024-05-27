@@ -18,10 +18,10 @@ type UserService interface {
 	Verify(ctx context.Context, email string, password string) (bool, error)
 	CheckUser(ctx context.Context, email string) (bool, error)
 	FindUserRoleByRoleID(roleID uuid.UUID) (string, error)
-	DeleteUser(ctx context.Context, userID uuid.UUID) (error)
-	UpdateUser(ctx context.Context, userDTO dto.UserUpdateDto) (error)
+	DeleteUser(ctx context.Context, userID uuid.UUID) error
+	UpdateUser(ctx context.Context, userDTO dto.UserUpdateDto) error
 	MeUser(ctx context.Context, userID uuid.UUID) (entity.User, error)
-	StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string) (error)
+	StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string) error
 }
 
 type userService struct {
@@ -81,7 +81,7 @@ func (us *userService) CheckUser(ctx context.Context, email string) (bool, error
 	return true, nil
 }
 
-func (us *userService) UpdateUser(ctx context.Context, userDTO dto.UserUpdateDto) (error) {
+func (us *userService) UpdateUser(ctx context.Context, userDTO dto.UserUpdateDto) error {
 	user := entity.User{}
 	err := smapping.FillStruct(&user, smapping.MapFields(userDTO))
 	if err != nil {
@@ -98,10 +98,10 @@ func (us *userService) FindUserRoleByRoleID(roleID uuid.UUID) (string, error) {
 	return us.roleRepository.FindRoleNameByID(roleID)
 }
 
-func (us *userService) DeleteUser(ctx context.Context, userID uuid.UUID) (error) {
+func (us *userService) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 	return us.userRepository.DeleteUser(ctx, userID)
 }
 
-func (us *userService) StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string) (error) {
+func (us *userService) StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string) error {
 	return us.userRepository.StoreUserToken(userID, sessionToken, refreshToken)
 }

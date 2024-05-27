@@ -19,14 +19,14 @@ type User struct {
 	AsalInstansi   string    `gorm:"type:varchar(255);" json:"asal_instansi"`
 	DateOfBirth    time.Time `gorm:"type:date;" json:"date_of_birth"`
 	SessionToken   string    `gorm:"type:varchar(255);" json:"session_token"`
-	STExpires 	   time.Time `gorm:"type:datetime;" json:"st_expires"`
+	STExpires      time.Time `gorm:"type:timestamp;" json:"st_expires"`
 	RefreshToken   string    `gorm:"type:varchar(255);" json:"refresh_token"`
-	RTExpires 	   time.Time `gorm:"type:datetime;" json:"rt_expires"`
-	
+	RTExpires      time.Time `gorm:"type:timestamp;" json:"rt_expires"`
+
 	Timestamp
 
-	RoleID         string    `gorm:"type:char(36);not_null" json:"role_id"`
-	Role           Role      `gorm:"foreignkey:RoleID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+	RoleID string `gorm:"type:char(36);not_null" json:"role_id"`
+	Role   Role   `gorm:"foreignkey:RoleID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {
