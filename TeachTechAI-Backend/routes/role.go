@@ -12,6 +12,7 @@ func RoleRoutes(router *gin.Engine, RoleController controller.RoleController) {
 	roleRoutes := router.Group("/api/role")
 	{
 		roleRoutes.POST("/create", RoleController.CreateRole)
+		roleRoutes.GET("/name", RoleController.GetRoleNameByID)
 		// roleRoutes.GET("", middleware.Authenticate(jwtService), UserController.GetAllUser)
 		// roleRoutes.POST("/login", UserController.LoginUser)
 		// roleRoutes.DELETE("/", middleware.Authenticate(jwtService), UserController.DeleteUser)

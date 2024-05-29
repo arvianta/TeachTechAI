@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"teach-tech-ai/entity"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -15,6 +16,10 @@ type UserRepository interface {
 	FindUserByID(ctx context.Context, userID uuid.UUID) (entity.User, error)
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
 	UpdateUser(ctx context.Context, user entity.User) error
+	StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error
+	FindUserRoleIDByID(userID uuid.UUID) (uuid.UUID, error)
+	InvalidateUserToken(userID uuid.UUID) error
+	GetUserSessionToken(userID uuid.UUID) (string, error)
 }
 
 type userConnection struct {
@@ -77,4 +82,54 @@ func (db *userConnection) UpdateUser(ctx context.Context, user entity.User) erro
 		return uc.Error
 	}
 	return nil
+}
+
+func (db *userConnection) StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error {
+	user := entity.User{ID: userID}
+	uc := db.connection.Model(&user).Updates(map[string]interface{}{
+		"session_token": sessionToken,
+		"refresh_token": refreshToken,
+		"st_expires": atx,
+		"rt_expires": rtx,
+	})
+	if uc.Error != nil {
+		return uc.Error
+	}
+	return nil
+}
+
+func (db *userConnection) FindUserRoleIDByID(userID uuid.UUID) (uuid.UUID, error) {
+	var user entity.User
+	ux := db.connection.Where("id = ?", userID).Take(&user)
+	if ux.Error != nil {
+		return uuid.Nil, ux.Error
+	}
+	roleID, err := uuid.Parse(user.RoleID)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return roleID, nil
+}
+
+func (db *userConnection) InvalidateUserToken(userID uuid.UUID) (error) {
+	user := entity.User{ID: userID}
+	uc := db.connection.Model(&user).Updates(map[string]interface{}{
+		"session_token": "",
+		"refresh_token": "",
+		"st_expires": time.Time{},
+		"rt_expires": time.Time{},
+	})
+	if uc.Error != nil {
+		return uc.Error
+	}
+	return nil
+}
+
+func (db *userConnection) GetUserSessionToken(userID uuid.UUID) (string, error) {
+	var user entity.User
+	ux := db.connection.Where("id = ?", userID).Take(&user)
+	if ux.Error != nil {
+		return "", ux.Error
+	}
+	return user.SessionToken, nil
 }
