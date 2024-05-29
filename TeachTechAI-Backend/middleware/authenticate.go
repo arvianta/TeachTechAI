@@ -34,6 +34,16 @@ func Authenticate(jwtService service.JWTService) gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
+		isValid, err := jwtService.ValidateTokenWithDB(authHeader)
+		if err != nil {
+			response := common.BuildErrorResponse("Gagal Memproses Request", "Token Tidak Valid", nil)
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
+			return
+		}
+		if !isValid {
+			response := common.BuildErrorResponse("Gagal Memproses Request", "Token Tidak Valid", nil)
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
+		}
 		userID, err := jwtService.GetUserIDByToken(authHeader)
 		if err != nil {
 			response := common.BuildErrorResponse("Gagal Memproses Request", err.Error(), nil)

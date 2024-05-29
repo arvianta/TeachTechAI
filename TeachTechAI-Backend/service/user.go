@@ -6,6 +6,7 @@ import (
 	"teach-tech-ai/entity"
 	"teach-tech-ai/helpers"
 	"teach-tech-ai/repository"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/mashingan/smapping"
@@ -21,7 +22,7 @@ type UserService interface {
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
 	UpdateUser(ctx context.Context, userDTO dto.UserUpdateDto) error
 	MeUser(ctx context.Context, userID uuid.UUID) (entity.User, error)
-	StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string) error
+	StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error
 }
 
 type userService struct {
@@ -102,6 +103,6 @@ func (us *userService) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 	return us.userRepository.DeleteUser(ctx, userID)
 }
 
-func (us *userService) StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string) error {
-	return us.userRepository.StoreUserToken(userID, sessionToken, refreshToken)
+func (us *userService) StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error {
+	return us.userRepository.StoreUserToken(userID, sessionToken, refreshToken, atx, rtx)
 }

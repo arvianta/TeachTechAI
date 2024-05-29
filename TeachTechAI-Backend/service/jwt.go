@@ -12,9 +12,11 @@ import (
 )
 
 type JWTService interface {
-	GenerateToken(userID uuid.UUID, role string) (string, string, error)
+	GenerateToken(userID uuid.UUID, role string) (string, string, time.Time, time.Time, error)
 	ValidateToken(token string) (*jwt.Token, error)
-	RefreshToken(refreshToken string) (string, string, error)
+	InvalidateToken(token string) error
+	ValidateTokenWithDB(token string) (bool, error)
+	RefreshToken(refreshToken string) (string, string, time.Time, time.Time, error)
 	GetUserIDByToken(token string) (uuid.UUID, error)
 	GetUserRoleByToken(token string) (string, error)
 }
@@ -59,13 +61,14 @@ func getRefreshSecretKey() string {
 	return refreshSecretKey
 }
 
-func (j *jwtService) GenerateToken(userID uuid.UUID, role string) (string, string, error) {
+func (j *jwtService) GenerateToken(userID uuid.UUID, role string) (string, string, time.Time, time.Time, error) {
 	// Access token claims
+	atx := time.Now().Add(time.Minute * 120)
 	accessClaims := &jwtCustomClaim{
 		UserID: userID,
 		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 120)),
+			ExpiresAt: jwt.NewNumericDate(atx),
 			Issuer:    j.issuer,
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
@@ -74,14 +77,15 @@ func (j *jwtService) GenerateToken(userID uuid.UUID, role string) (string, strin
 	accessT, err := accessToken.SignedString([]byte(j.secretKey))
 	if err != nil {
 		log.Println(err)
-		return "", "", err
+		return "", "", time.Time{}, time.Time{}, err
 	}
 
 	// Refresh token claims
+	rtx := time.Now().Add(time.Hour * 24 * 30)
 	refreshClaims := &jwtCustomClaim{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 30)),
+			ExpiresAt: jwt.NewNumericDate(rtx),
 			Issuer:    j.issuer,
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
@@ -90,10 +94,10 @@ func (j *jwtService) GenerateToken(userID uuid.UUID, role string) (string, strin
 	refreshT, err := refreshToken.SignedString([]byte(j.refreshSecretKey))
 	if err != nil {
 		log.Println(err)
-		return "", "", err
+		return "", "", time.Time{}, time.Time{}, err
 	}
 
-	return accessT, refreshT, nil
+	return accessT, refreshT, atx, rtx, nil
 }
 
 func (j *jwtService) ValidateToken(token string) (*jwt.Token, error) {
@@ -105,7 +109,39 @@ func (j *jwtService) ValidateToken(token string) (*jwt.Token, error) {
 	})
 }
 
-func (j *jwtService) RefreshToken(refreshToken string) (string, string, error) {
+func (j *jwtService) InvalidateToken(token string) error {
+	userID, err := j.GetUserIDByToken(token)
+	if err != nil {
+		return err
+	}
+
+	err = j.userRepository.InvalidateUserToken(userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (j *jwtService) ValidateTokenWithDB(token string) (bool, error) {
+	userID, err := j.GetUserIDByToken(token)
+	if err != nil {
+		return false, err
+	}
+
+	dbToken, err := j.userRepository.GetUserSessionToken(userID)
+	if err != nil {
+		return false, err
+	}
+
+	if dbToken != token {
+		return false, fmt.Errorf("invalid token")
+	}
+
+	return true, nil
+}
+
+func (j *jwtService) RefreshToken(refreshToken string) (string, string, time.Time, time.Time, error) {
 	token, err := jwt.ParseWithClaims(refreshToken, &jwtCustomClaim{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method %v", t.Header["alg"])
@@ -114,22 +150,22 @@ func (j *jwtService) RefreshToken(refreshToken string) (string, string, error) {
 	})
 
 	if err != nil {
-		return "", "", err
+		return "", "", time.Time{}, time.Time{}, err
 	}
 
 	if claims, ok := token.Claims.(*jwtCustomClaim); ok && token.Valid {
 		roleID, err := j.userRepository.FindUserRoleIDByID(claims.UserID)
 		if err != nil {
-			return "", "", err
+			return "", "", time.Time{}, time.Time{}, err
 		}
 		role, err := j.roleRepository.FindRoleNameByID(roleID)
 		if err != nil {
-			return "", "", err
+			return "", "", time.Time{}, time.Time{}, err
 		}
 		return j.GenerateToken(claims.UserID, role)
 	}
 
-	return "", "", fmt.Errorf("invalid refresh token")
+	return "", "", time.Time{}, time.Time{}, fmt.Errorf("invalid refresh token")
 }
 
 func (j *jwtService) GetUserIDByToken(token string) (uuid.UUID, error) {
@@ -161,5 +197,3 @@ func (j *jwtService) GetUserRoleByToken(token string) (string, error) {
 	role := fmt.Sprintf("%v", claims["role"])
 	return role, nil
 }
-
-//TODO: invalidate token function

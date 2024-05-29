@@ -20,6 +20,7 @@ type UserController interface {
 	GetAllUser(ctx *gin.Context)
 	UpdateUser(ctx *gin.Context)
 	DeleteUser(ctx *gin.Context)
+	Logout(ctx *gin.Context)
 }
 
 type userController struct {
@@ -95,7 +96,7 @@ func (uc *userController) LoginUser(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 	}
 
-	sessionToken, refreshToken, err := uc.jwtService.GenerateToken(user.ID, role)
+	sessionToken, refreshToken, atx, rtx, err := uc.jwtService.GenerateToken(user.ID, role)
 	if err != nil {
 		response := common.BuildErrorResponse("Gagal Login", err.Error(), common.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
@@ -106,7 +107,7 @@ func (uc *userController) LoginUser(ctx *gin.Context) {
 		Role: role,
 	}
 
-	err = uc.userService.StoreUserToken(user.ID, sessionToken, refreshToken)
+	err = uc.userService.StoreUserToken(user.ID, sessionToken, refreshToken, atx, rtx)
 	if err != nil {
 		response := common.BuildErrorResponse("Gagal Login", err.Error(), common.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
@@ -145,15 +146,12 @@ func (uc *userController) RefreshUser(ctx *gin.Context) {
 		return
 	}
 
-	newSessionToken, newRefreshToken, err := uc.jwtService.RefreshToken(refreshToken.RefreshToken)
+	newSessionToken, newRefreshToken, atx, rtx, err := uc.jwtService.RefreshToken(refreshToken.RefreshToken)
 	if err != nil {
 		response := common.BuildErrorResponse("Gagal Refresh Token", err.Error(), common.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
-
-	//TODO: invalidate old refresh token
-	//implement here
 
 	role, err := uc.jwtService.GetUserRoleByToken(newSessionToken)
 	if err != nil {
@@ -169,7 +167,7 @@ func (uc *userController) RefreshUser(ctx *gin.Context) {
 		return
 	}
 
-	err = uc.userService.StoreUserToken(userID, newSessionToken, newRefreshToken)
+	err = uc.userService.StoreUserToken(userID, newSessionToken, newRefreshToken, atx, rtx)
 	if err != nil {
 		response := common.BuildErrorResponse("Gagal Refresh Token", err.Error(), common.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
@@ -180,6 +178,19 @@ func (uc *userController) RefreshUser(ctx *gin.Context) {
 		RefreshToken: newRefreshToken,
 		Role: role,
 	})
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (uc *userController) Logout(ctx *gin.Context) {
+	token := ctx.MustGet("token").(string)
+	err := uc.jwtService.InvalidateToken(token)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Logout", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	res := common.BuildResponse(true, "Berhasil Logout", common.EmptyObj{})
 	ctx.JSON(http.StatusOK, res)
 }
 
@@ -225,6 +236,12 @@ func (uc *userController) UpdateUser(ctx *gin.Context) {
 
 func (uc *userController) DeleteUser(ctx *gin.Context) {
 	token := ctx.MustGet("token").(string)
+	err := uc.jwtService.InvalidateToken(token)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Logout", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
 	userID, err := uc.jwtService.GetUserIDByToken(token)
 
 	if err != nil {
