@@ -1,1 +1,4 @@
 .env
+Dockerfile
+.dockerignore
+teachtechai-key.json
