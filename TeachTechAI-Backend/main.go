@@ -28,28 +28,33 @@ func main() {
 		db *gorm.DB = config.SetupDatabaseConnection()
 
 		
-		roleRepository repository.RoleRepository = repository.NewRoleRepository(db)
-		userRepository repository.UserRepository = repository.NewUserRepository(db)
+		roleRepository 	repository.RoleRepository = repository.NewRoleRepository(db)
+		userRepository 	repository.UserRepository = repository.NewUserRepository(db)
 		
-		jwtService 	   service.JWTService 		 = service.NewJWTService(userRepository, roleRepository)
-		userService    service.UserService       = service.NewUserService(userRepository, roleRepository)
-		roleService    service.RoleService       = service.NewRoleService(roleRepository)
+		oauthService   	service.OAuthService      = service.NewOAuthService()
+		jwtService 	  	service.JWTService 		 = service.NewJWTService(userRepository, roleRepository)
+		userService    	service.UserService       = service.NewUserService(userRepository, roleRepository)
+		roleService    	service.RoleService       = service.NewRoleService(roleRepository)
 		
-		roleController controller.RoleController = controller.NewRoleController(roleService, userService)
-		userController controller.UserController = controller.NewUserController(userService, jwtService)
+		oauthController controller.OAuthController = controller.NewOAuthController(oauthService)
+		roleController 	controller.RoleController = controller.NewRoleController(roleService, userService)
+		userController 	controller.UserController = controller.NewUserController(userService, jwtService)
 	)
 
 	config.AutoMigrateDatabase(db)
 	// config.CloseDatabaseConnection(db)
 	fmt.Println("Migration success!")
 
+	oauthService.InitOAuth()
+
 	server := gin.Default()
 	routes.UserRoutes(server, userController, jwtService)
 	routes.RoleRoutes(server, roleController)
+	routes.OAuthRoutes(server, oauthController)
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8000"
+		port = "3000"
 	}
 	server.Run("127.0.0.1:" + port)
 }
