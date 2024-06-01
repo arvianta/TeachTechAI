@@ -24,21 +24,30 @@ func main() {
 		return
 	}
 
-	var (
-		db *gorm.DB = config.SetupDatabaseConnection()
+	var db *gorm.DB
+	if os.Getenv("ENV") == "production" {
+		db = config.ConnectWithConnector()
+	} else {
+		db = config.SetupDatabaseConnection()
+	}
 
+	defer config.CloseDatabaseConnection(db)
+
+	config.AutoMigrateDatabase(db)
+	fmt.Println("Migration success!")
+
+	var (
+		roleRepository 	repository.RoleRepository  = repository.NewRoleRepository(db)
+		userRepository 	repository.UserRepository  = repository.NewUserRepository(db)
 		
-		roleRepository 	repository.RoleRepository = repository.NewRoleRepository(db)
-		userRepository 	repository.UserRepository = repository.NewUserRepository(db)
-		
-		oauthService   	service.OAuthService      = service.NewOAuthService()
-		jwtService 	  	service.JWTService 		 = service.NewJWTService(userRepository, roleRepository)
-		userService    	service.UserService       = service.NewUserService(userRepository, roleRepository)
-		roleService    	service.RoleService       = service.NewRoleService(roleRepository)
+		oauthService   	service.OAuthService       = service.NewOAuthService()
+		jwtService 	  	service.JWTService 		   = service.NewJWTService(userRepository, roleRepository)
+		userService    	service.UserService        = service.NewUserService(userRepository, roleRepository)
+		roleService    	service.RoleService        = service.NewRoleService(roleRepository)
 		
 		oauthController controller.OAuthController = controller.NewOAuthController(oauthService)
-		roleController 	controller.RoleController = controller.NewRoleController(roleService, userService)
-		userController 	controller.UserController = controller.NewUserController(userService, jwtService)
+		roleController 	controller.RoleController  = controller.NewRoleController(roleService, userService)
+		userController 	controller.UserController  = controller.NewUserController(userService, jwtService)
 	)
 
 	config.AutoMigrateDatabase(db)
@@ -54,7 +63,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "3000"
+		port = "8080"
 	}
 	server.Run("127.0.0.1:" + port)
 }
