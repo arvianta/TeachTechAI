@@ -2,3 +2,5 @@
 Dockerfile
 .dockerignore
 teachtechai-key.json
+app.yaml
+.gcloudignore
