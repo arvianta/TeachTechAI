@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	"net/http"
+	"log"
 	"os"
-	"teach-tech-ai/common"
 	"teach-tech-ai/config"
 	"teach-tech-ai/controller"
 	"teach-tech-ai/repository"
@@ -19,9 +18,7 @@ import (
 func main() {
 	err := godotenv.Load(".env")
 	if err != nil {
-		res := common.BuildErrorResponse("Gagal Terhubung ke Server", err.Error(), common.EmptyObj{})
-		(*gin.Context).JSON((&gin.Context{}), http.StatusBadGateway, res)
-		return
+		log.Fatalf("Error loading .env file: %v", err)
 	}
 
 	var db *gorm.DB
@@ -50,10 +47,6 @@ func main() {
 		userController 	controller.UserController  = controller.NewUserController(userService, jwtService)
 	)
 
-	config.AutoMigrateDatabase(db)
-	// config.CloseDatabaseConnection(db)
-	fmt.Println("Migration success!")
-
 	oauthService.InitOAuth()
 
 	server := gin.Default()
@@ -65,5 +58,5 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	server.Run("127.0.0.1:" + port)
+	server.Run("0.0.0.0:" + port)
 }
