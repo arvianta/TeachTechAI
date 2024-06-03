@@ -8,9 +8,9 @@ import (
 
 type UserCreateDto struct {
 	ID             uuid.UUID `gorm:"type:char(36);primary_key;not_null" json:"id"`
-	Email          string    `json:"email" binding:"required"`
-	Name           string    `json:"name" binding:"required"`
-	Password       string    `json:"password" binding:"required"`
+	Email          string    `json:"email" form:"email" binding:"required"`
+	Name           string    `json:"name" form:"name" binding:"required"`
+	Password       string    `json:"password" form:"password" binding:"required"`
 }
 
 type UserUpdateDto struct {
