@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"teach-tech-ai/config"
 	"teach-tech-ai/controller"
+	"teach-tech-ai/database"
 	"teach-tech-ai/repository"
 	"teach-tech-ai/routes"
 	"teach-tech-ai/service"
@@ -16,24 +16,15 @@ import (
 )
 
 func main() {
-	err := godotenv.Load(".env")
-	if err != nil {
+	if os.Getenv("APP_ENV") != "production" {
+		err := godotenv.Load(".env")
+		if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
+		}
 	}
-
-	var db *gorm.DB
-	if os.Getenv("ENV") == "production" {
-		db = config.ConnectWithConnector()
-	} else {
-		db = config.SetupDatabaseConnection()
-	}
-
-	defer config.CloseDatabaseConnection(db)
-
-	config.AutoMigrateDatabase(db)
-	fmt.Println("Migration success!")
-
+	
 	var (
+		db 				*gorm.DB 				   = config.SetupDatabaseConnection()
 		roleRepository 	repository.RoleRepository  = repository.NewRoleRepository(db)
 		userRepository 	repository.UserRepository  = repository.NewUserRepository(db)
 		
@@ -46,6 +37,15 @@ func main() {
 		roleController 	controller.RoleController  = controller.NewRoleController(roleService, userService)
 		userController 	controller.UserController  = controller.NewUserController(userService, jwtService)
 	)
+	// migrate db
+	if err := database.Migrate(db); err != nil {
+		log.Fatalf("Error migrating database: %v", err)
+	}
+
+	// seed db
+	if err := database.Seeder(db); err != nil {
+		log.Fatalf("Error seeding database: %v", err)
+	}
 
 	oauthService.InitOAuth()
 

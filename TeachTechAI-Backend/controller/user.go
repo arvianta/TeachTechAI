@@ -56,6 +56,7 @@ func (uc *userController) RegisterUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
+	//
 
 	res := common.BuildResponse(true, "Berhasil Menambahkan User", common.EmptyObj{})
 	ctx.JSON(http.StatusOK, res)
