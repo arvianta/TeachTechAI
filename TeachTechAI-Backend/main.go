@@ -29,11 +29,13 @@ func main() {
 		userRepository 	repository.UserRepository  = repository.NewUserRepository(db)
 		
 		oauthService   	service.OAuthService       = service.NewOAuthService()
+		otpService     	service.OTPService         = service.NewOTPService()
 		jwtService 	  	service.JWTService 		   = service.NewJWTService(userRepository, roleRepository)
 		userService    	service.UserService        = service.NewUserService(userRepository, roleRepository)
 		roleService    	service.RoleService        = service.NewRoleService(roleRepository)
 		
 		oauthController controller.OAuthController = controller.NewOAuthController(oauthService)
+		otpController   controller.OTPController   = controller.NewOTPController(otpService)
 		roleController 	controller.RoleController  = controller.NewRoleController(roleService, userService)
 		userController 	controller.UserController  = controller.NewUserController(userService, jwtService)
 	)
@@ -53,6 +55,7 @@ func main() {
 	routes.UserRoutes(server, userController, jwtService)
 	routes.RoleRoutes(server, roleController)
 	routes.OAuthRoutes(server, oauthController)
+	routes.OTPRoutes(server, otpController)
 
 	port := os.Getenv("PORT")
 	if port == "" {

@@ -39,7 +39,7 @@ func (uc *userController) RegisterUser(ctx *gin.Context) {
 	var user dto.UserCreateDto
 	err := ctx.ShouldBind(&user)
 	if err != nil {
-		response := common.BuildErrorResponse("Gagal Login", err.Error(), common.EmptyObj{})
+		response := common.BuildErrorResponse("Gagal Register", err.Error(), common.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
