@@ -32,11 +32,9 @@ func main() {
 		otpService     	service.OTPService         = service.NewOTPService()
 		jwtService 	  	service.JWTService 		   = service.NewJWTService(userRepository, roleRepository)
 		userService    	service.UserService        = service.NewUserService(userRepository, roleRepository)
-		roleService    	service.RoleService        = service.NewRoleService(roleRepository)
 		
 		oauthController controller.OAuthController = controller.NewOAuthController(oauthService)
 		otpController   controller.OTPController   = controller.NewOTPController(otpService)
-		roleController 	controller.RoleController  = controller.NewRoleController(roleService, userService)
 		userController 	controller.UserController  = controller.NewUserController(userService, jwtService)
 	)
 	// migrate db
@@ -53,7 +51,6 @@ func main() {
 
 	server := gin.Default()
 	routes.UserRoutes(server, userController, jwtService)
-	routes.RoleRoutes(server, roleController)
 	routes.OAuthRoutes(server, oauthController)
 	routes.OTPRoutes(server, otpController)
 
