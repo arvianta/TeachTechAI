@@ -12,6 +12,6 @@ func MessageRoutes(router *gin.Engine, MessageController controller.MessageContr
 	messageRoutes := router.Group("/api/message")
 	{
 		messageRoutes.POST("/prompt", middleware.Authenticate(jwtService), MessageController.CreateMessage)
-		messageRoutes.GET("/conversation", middleware.Authenticate(jwtService), MessageController.GetMessagesFromConversation)
+		messageRoutes.GET("/conversation/:id", middleware.Authenticate(jwtService), MessageController.GetMessagesFromConversation)
 	}
 }

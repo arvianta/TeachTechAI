@@ -66,15 +66,17 @@ func (mc *messageController) CreateMessage(ctx *gin.Context) {
 }
 
 func (mc *messageController) GetMessagesFromConversation(ctx *gin.Context) {
-	var msgs dto.GetMessagesFromConversationDTO
-	err := ctx.ShouldBindJSON(&msgs)
-	if err != nil {
-		response := common.BuildErrorResponse("Failed to get conversation", err.Error(), common.EmptyObj{})
+	conversationID := ctx.Param("id")
+	if conversationID == "" {
+		response := common.BuildErrorResponse("Failed to get conversation", "Invalid conversation ID", common.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
 
-	messages, err := mc.messageService.GetMessagesFromConversation(ctx.Request.Context(), msgs)
+	var convoID dto.GetMessagesFromConversationDTO
+	convoID.ConversationID = conversationID
+
+	messages, err := mc.messageService.GetMessagesFromConversation(ctx.Request.Context(), convoID)
 	if err != nil {
 		response := common.BuildErrorResponse("Failed to fetch messages", err.Error(), common.EmptyObj{})
 		ctx.JSON(http.StatusBadRequest, response)
