@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/loginFragment"
+    android:padding="30dp"
+    tools:context=".view.login.LoginFragment">
+
+    <ImageView
+        android:id="@+id/login_logo"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginTop="8dp"
+        android:src="@drawable/logo_kaizen"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/guidelineTop" />
+
+    <TextView
+        android:id="@+id/login_tvTeachTechAI"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/poppins_bold"
+        android:textColor="@color/kaizen_primary"
+        android:textSize="20sp"
+        app:layout_constraintTop_toBottomOf="@+id/login_logo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:text="TeachTechAI" />
+
+    <TextView
+        android:id="@+id/tv_loginUntukMelanjutkan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="@font/poppins_regular"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@+id/login_linearLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:text="Login untuk melanjutkan" />
+
+    <LinearLayout
+        android:id="@+id/login_linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/login_editEmail"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:padding="10dp"
+            android:textSize="14sp"
+            android:drawableStart="@drawable/baseline_email_24"
+            android:drawablePadding="12dp"
+            android:hint="Email"
+            android:background="@drawable/custom_inputtext"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_marginTop="17dp"
+            android:layout_height="match_parent">
+            <EditText
+                android:id="@+id/login_editPassword"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:padding="10dp"
+                android:textSize="14sp"
+                android:drawablePadding="12dp"
+                android:drawableStart="@drawable/baseline_lock_24"
+                android:inputType="textPassword"
+                android:hint="Kata Sandi"
+                android:background="@drawable/custom_inputtext"/>
+            <ImageView
+                android:id="@+id/password_toggle"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="18dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/baseline_visibility_24"/>
+        </RelativeLayout>
+        <TextView
+            android:id="@+id/login_tvKataSandiSalah"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="17dp"
+            android:gravity="center"
+            android:visibility="gone"
+            android:fontFamily="@font/poppins_regular"
+            android:textSize="12sp"
+            android:textColor="@color/error_500"
+            android:background="@color/error_100"
+            android:text="Maaf, kata sandi Anda salah. Silahkan periksa kembali kata sandi Anda."/>
+        <Button
+            android:id="@+id/login_buttonMasuk"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="17dp"
+            android:fontFamily="@font/poppins_bold"
+            android:textColor="@color/white"
+            android:text="Masuk"
+            android:textAllCaps="false"
+            android:background="@drawable/button_shape"/>
+        <Button
+            android:id="@+id/login_buttonGoogle"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="17dp"
+            android:fontFamily="@font/poppins_medium"
+            android:textColor="@color/black"
+            android:background="@drawable/button_google"
+            android:text="Masuk dengan Google"
+            android:textAllCaps="false" />
+    </LinearLayout>
+    <TextView
+        android:id="@+id/login_lupaKataSandi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/login_linearLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="20dp"
+        android:clickable="true"
+        android:textSize="11sp"
+        android:textColor="@color/kaizen_primary"
+        android:fontFamily="@font/poppins_medium"
+        android:text="Lupa Kata Sandi?"/>
+
+    <LinearLayout
+        android:id="@+id/tv_LinearLayoutDaftar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/login_tvBelumMemilikiAkun"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_regular"
+            android:text="Belum memiliki akun?"
+            android:textColor="@color/black"
+            android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/login_tvDaftarSekarang"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/login_tvDaftarSekarang"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_medium"
+            android:layout_marginStart="4dp"
+            android:text="Daftar sekarang"
+            android:textColor="@color/kaizen_primary"
+            android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/login_tvBelumMemilikiAkun" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/login_progressBar"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineTop"
+        android:layout_width="wrap_content"
+        android:layout_height="64dp"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.05"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
