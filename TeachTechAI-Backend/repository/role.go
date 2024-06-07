@@ -10,8 +10,6 @@ import (
 )
 
 type RoleRepository interface {
-	CreateRole(ctx context.Context, role entity.Role) (entity.Role, error)
-	GetAllRole(ctx context.Context) ([]entity.Role, error)
 	FindRoleByName(ctx context.Context, name string) (entity.Role, error)
 	FindRoleIDByName(ctx context.Context, name string) (string, error)
 	FindRoleNameByID(id uuid.UUID) (string, error)
@@ -25,24 +23,6 @@ func NewRoleRepository(db *gorm.DB) RoleRepository {
 	return &roleConnection{
 		connection: db,
 	}
-}
-
-func (db *roleConnection) CreateRole(ctx context.Context, role entity.Role) (entity.Role, error) {
-	role.ID = uuid.New()
-	uc := db.connection.Create(&role)
-	if uc.Error != nil {
-		return entity.Role{}, uc.Error
-	}
-	return role, nil
-}
-
-func (db *roleConnection) GetAllRole(ctx context.Context) ([]entity.Role, error) {
-	var listRole []entity.Role
-	tx := db.connection.Find(&listRole)
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
-	return listRole, nil
 }
 
 func (db *roleConnection) FindRoleByName(ctx context.Context, name string) (entity.Role, error) {

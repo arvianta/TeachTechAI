@@ -11,5 +11,9 @@ func Seeder(db *gorm.DB) error {
 		return err
 	}
 
+	if err := seeders.ListAIModelSeeder(db); err != nil {
+		return err
+	}
+
 	return nil
 }
