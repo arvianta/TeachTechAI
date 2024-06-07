@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@layout/fragment_login">
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.teachtechai.view.login.LoginFragment"
+        android:label="login" />
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.teachtechai.view.register.RegisterFragment"
+        android:label="register" />
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="com.example.teachtechai.view.chat.ChatFragment"
+        android:label="chat" />
+    <fragment
+        android:id="@+id/verifyFragment"
+        android:name="com.example.teachtechai.view.inputotp.VerifyOtp"
+        android:label="verify" />
+    <fragment
+        android:id="@+id/forgetPassword"
+        android:name="com.example.teachtechai.view.forgetpassword.ForgetPassword"
+        android:label="forgetpassword" />
+
+</navigation>
