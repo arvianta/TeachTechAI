@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"teach-tech-ai/entity"
 
 	"github.com/google/uuid"
@@ -9,6 +10,7 @@ import (
 
 type MessageRepository interface {
 	StoreMessage(message entity.Message) (entity.Message, error)
+	GetMessagesFromConversation(ctx context.Context, conversationID uuid.UUID) ([]entity.Message, error)
 }
 
 type messageConnection struct {
@@ -28,4 +30,13 @@ func (db *messageConnection) StoreMessage(message entity.Message) (entity.Messag
 		return entity.Message{}, uc.Error
 	}
 	return message, nil
+}
+
+func (db *messageConnection) GetMessagesFromConversation(ctx context.Context, conversationID uuid.UUID) ([]entity.Message, error) {
+	var messages []entity.Message
+	result := db.connection.Where("conversation_id = ?", conversationID).Order("datetime ASC").Find(&messages)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return messages, nil
 }
