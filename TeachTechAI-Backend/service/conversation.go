@@ -12,6 +12,7 @@ type ConversationService interface {
 	CreateConversation(userID uuid.UUID, topic string) (entity.Conversation, error)
 	ValidateUserConversation(userID uuid.UUID, convoID uuid.UUID) (bool, error)
 	GetConversationsFromUser(userID uuid.UUID) ([]entity.Conversation, error)
+	DeleteConversation(convoID uuid.UUID) error
 }
 
 type conversationService struct {
@@ -50,3 +51,7 @@ func (cs *conversationService) ValidateUserConversation(userID uuid.UUID, convoI
 func (cs *conversationService) GetConversationsFromUser(userID uuid.UUID) ([]entity.Conversation, error) {
 	return cs.conversationRepository.GetConversationsFromUser(userID)
 } 
+
+func (cs *conversationService) DeleteConversation(convoID uuid.UUID) error {
+	return cs.conversationRepository.DeleteConversation(convoID)
+}

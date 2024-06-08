@@ -11,6 +11,7 @@ type ConversationRepository interface {
 	StoreConversation(conversation entity.Conversation) (entity.Conversation, error)
 	GetConversation(convoID uuid.UUID) (entity.Conversation, error)
 	GetConversationsFromUser(user uuid.UUID) ([]entity.Conversation, error)
+	DeleteConversation(convoID uuid.UUID) error
 }
 
 type conversationConnection struct {
@@ -50,3 +51,10 @@ func (db *conversationConnection) GetConversationsFromUser(user uuid.UUID) ([]en
 	return conversations, nil
 }
 
+func (db *conversationConnection) DeleteConversation(convoID uuid.UUID) error {
+	uc := db.connection.Where("id = ?", convoID).Delete(&entity.Conversation{}, &convoID)
+	if uc.Error != nil {
+		return uc.Error
+	}
+	return nil
+}

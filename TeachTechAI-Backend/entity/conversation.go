@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type Conversation struct {
@@ -14,5 +13,6 @@ type Conversation struct {
     EndTime   time.Time      `gorm:"type:timestamp;" json:"end_time"`
     UserID    uuid.UUID      `gorm:"type:char(36);not null" json:"user_id"`
     User      User           `gorm:"foreignkey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
-    DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+    
+    Timestamp
 }

@@ -12,5 +12,6 @@ func ConversationRoutes(router *gin.Engine, ConversationController controller.Co
 	conversationRoutes := router.Group("/api/conversation")
 	{
 		conversationRoutes.GET("/me", middleware.Authenticate(jwtService), ConversationController.GetConversationsFromUser)
+		conversationRoutes.DELETE("/:convoID", middleware.Authenticate(jwtService), ConversationController.DeleteConversation)
 	}
 }
