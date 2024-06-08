@@ -7,6 +7,7 @@ import (
 	"teach-tech-ai/service"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type MessageController interface {
@@ -36,16 +37,16 @@ func (mc *messageController) CreateMessage(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
+	token := ctx.MustGet("token").(string)
+	userID, err := mc.jwtService.GetUserIDByToken(token)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Memproses Request", "Token Tidak Valid", nil)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
+		return
+	}
 
 	if msg.ConversationID == "" {
-		token := ctx.MustGet("token").(string)
-		userID, err := mc.jwtService.GetUserIDByToken(token)
-		if err != nil {
-			response := common.BuildErrorResponse("Gagal Memproses Request", "Token Tidak Valid", nil)
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
-			return
-		}
-		conversation, err := mc.conversationService.CreateConversation(userID)
+		conversation, err := mc.conversationService.CreateConversation(userID, msg.Topic)
 		if err != nil {
 			response := common.BuildErrorResponse("Gagal Membuat Pesan", err.Error(), common.EmptyObj{})
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
@@ -53,6 +54,20 @@ func (mc *messageController) CreateMessage(ctx *gin.Context) {
 		}
 		msg.ConversationID = conversation.ID.String()
 	}
+
+	convoID, err := uuid.Parse(msg.ConversationID)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Membuat Pesan", "Invalid conversation ID", common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	if valid, err := mc.conversationService.ValidateUserConversation(userID, convoID); !valid || err != nil{
+		response := common.BuildErrorResponse("Gagal Membuat Pesan", "Anda Tidak Memiliki Akses", common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
+		return
+	}
+
 
 	message, err := mc.messageService.CreateMessage(ctx.Request.Context(), msg)
 	if err != nil {

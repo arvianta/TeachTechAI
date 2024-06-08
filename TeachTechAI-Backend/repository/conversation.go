@@ -9,6 +9,8 @@ import (
 
 type ConversationRepository interface {
 	StoreConversation(conversation entity.Conversation) (entity.Conversation, error)
+	GetConversation(convoID uuid.UUID) (entity.Conversation, error)
+	GetConversationsFromUser(user uuid.UUID) ([]entity.Conversation, error)
 }
 
 type conversationConnection struct {
@@ -29,3 +31,22 @@ func (db *conversationConnection) StoreConversation(conversation entity.Conversa
 	}
 	return conversation, nil
 }
+
+func (db *conversationConnection) GetConversation(convoID uuid.UUID) (entity.Conversation, error) {
+	var conversation entity.Conversation
+	err := db.connection.Where("id = ?", convoID).First(&conversation).Error
+	if err != nil {
+		return entity.Conversation{}, err
+	}
+	return conversation, nil
+}
+
+func (db *conversationConnection) GetConversationsFromUser(user uuid.UUID) ([]entity.Conversation, error) {
+	var conversations []entity.Conversation
+	err := db.connection.Where("user_id = ?", user).Order("start_time ASC").Find(&conversations).Error
+	if err != nil {
+		return []entity.Conversation{}, err
+	}
+	return conversations, nil
+}
+

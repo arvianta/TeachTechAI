@@ -42,6 +42,7 @@ func main() {
 		otpController   controller.OTPController   					= controller.NewOTPController(otpService)
 		userController 	controller.UserController  					= controller.NewUserController(userService, jwtService)
 		messageController controller.MessageController			 	= controller.NewMessageController(messageService, conversationService, jwtService)
+		conversationController controller.ConversationController 	= controller.NewConversationController(conversationService, jwtService)
 	)
 	// migrate db
 	if err := database.Migrate(db); err != nil {
@@ -60,6 +61,7 @@ func main() {
 	routes.OAuthRoutes(server, oauthController)
 	routes.OTPRoutes(server, otpController)
 	routes.MessageRoutes(server, messageController, jwtService)
+	routes.ConversationRoutes(server, conversationController, jwtService)
 
 	port := os.Getenv("PORT")
 	if port == "" {

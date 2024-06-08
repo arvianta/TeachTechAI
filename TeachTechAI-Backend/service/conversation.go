@@ -9,7 +9,9 @@ import (
 )
 
 type ConversationService interface {
-	CreateConversation(userID uuid.UUID) (entity.Conversation, error)
+	CreateConversation(userID uuid.UUID, topic string) (entity.Conversation, error)
+	ValidateUserConversation(userID uuid.UUID, convoID uuid.UUID) (bool, error)
+	GetConversationsFromUser(userID uuid.UUID) ([]entity.Conversation, error)
 }
 
 type conversationService struct {
@@ -22,11 +24,29 @@ func NewConversationService(cr repository.ConversationRepository) ConversationSe
 	}
 }
 
-func (ms *conversationService) CreateConversation(userID uuid.UUID) (entity.Conversation, error) {
+func (cs *conversationService) CreateConversation(userID uuid.UUID, topic string) (entity.Conversation, error) {
 	conversation := entity.Conversation{
 		UserID: userID,
 		StartTime: time.Now(),
+		Topic: topic,
 	}
 	
-	return ms.conversationRepository.StoreConversation(conversation)
+	return cs.conversationRepository.StoreConversation(conversation)
 }
+
+func (cs *conversationService) ValidateUserConversation(userID uuid.UUID, convoID uuid.UUID) (bool, error) {
+	conversation, err := cs.conversationRepository.GetConversation(convoID)
+	if err != nil {
+		return false, err
+	}
+
+	if conversation.UserID != userID {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (cs *conversationService) GetConversationsFromUser(userID uuid.UUID) ([]entity.Conversation, error) {
+	return cs.conversationRepository.GetConversationsFromUser(userID)
+} 
