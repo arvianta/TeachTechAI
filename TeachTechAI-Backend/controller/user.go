@@ -39,7 +39,7 @@ func (uc *userController) RegisterUser(ctx *gin.Context) {
 	var user dto.UserCreateDto
 	err := ctx.ShouldBind(&user)
 	if err != nil {
-		response := common.BuildErrorResponse("Gagal Login", err.Error(), common.EmptyObj{})
+		response := common.BuildErrorResponse("Gagal Register", err.Error(), common.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
@@ -50,14 +50,15 @@ func (uc *userController) RegisterUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
-	result, err := uc.userService.RegisterUser(ctx.Request.Context(), user)
+	_, err = uc.userService.RegisterUser(ctx.Request.Context(), user)
 	if err != nil {
 		res := common.BuildErrorResponse("Gagal Menambahkan User", err.Error(), common.EmptyObj{})
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
+	//
 
-	res := common.BuildResponse(true, "Berhasil Menambahkan User", result)
+	res := common.BuildResponse(true, "Berhasil Menambahkan User", common.EmptyObj{})
 	ctx.JSON(http.StatusOK, res)
 }
 

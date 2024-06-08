@@ -17,3 +17,12 @@ type Authorization struct {
 	RefreshToken string `json:"refresh_token"`
 	Role  		 string `json:"role"`
 }
+
+type OTPData struct {
+	PhoneNumber string `json:"phone_number,omitempty" validate:"required"`
+}
+
+type VerifyData struct {
+	PhoneNumber string `json:"phone_number,omitempty" validate:"required"`
+	Code string   `json:"code,omitempty" validate:"required"`
+}

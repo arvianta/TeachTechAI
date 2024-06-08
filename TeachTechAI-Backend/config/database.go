@@ -2,8 +2,6 @@ package config
 
 import (
 	"fmt"
-	"teach-tech-ai/entity"
-
 	"os"
 
 	"gorm.io/driver/postgres"
@@ -19,27 +17,16 @@ func SetupDatabaseConnection() *gorm.DB {
 	dbTimezone := os.Getenv("DB_TIMEZONE")
 
 	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable TimeZone=%v", dbHost, dbUser, dbPass, dbName, dbPort, dbTimezone)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		DSN: dsn,
+		PreferSimpleProtocol: true,
+	}), &gorm.Config{})
 	if err != nil {
-		fmt.Println(err)
 		panic(err)
 	}
 
 	return db
 } 
-
-func AutoMigrateDatabase(db *gorm.DB) {
-	if err := db.AutoMigrate(
-		entity.Role{},
-		entity.User{},
-		entity.Conversation{},
-		entity.AIModel{},
-		entity.Message{},
-	); err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
-}
 
 func CloseDatabaseConnection(db *gorm.DB) {
 	dbSQL, err := db.DB()

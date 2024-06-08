@@ -9,7 +9,7 @@ import (
 )
 
 type User struct {
-	ID             uuid.UUID `gorm:"type:char(36);primary_key;not_null" json:"id"`
+	ID             uuid.UUID `gorm:"type:char(36);primary_key;default:not_null" json:"id"`
 	GoogleID       string    `gorm:"type:varchar(255);" json:"google_id"`
 	Email          string    `gorm:"type:varchar(255);unique;not_null" json:"email"`
 	Name           string    `gorm:"type:varchar(255);not_null" json:"name"`
@@ -18,6 +18,7 @@ type User struct {
 	ProfilePicture string    `gorm:"type:varchar(255);" json:"profile_picture"`
 	AsalInstansi   string    `gorm:"type:varchar(255);" json:"asal_instansi"`
 	DateOfBirth    time.Time `gorm:"type:date;" json:"date_of_birth"`
+	// IsVerified     bool      `gorm:"type:boolean;default:false" json:"is_verified"`
 	SessionToken   string    `gorm:"type:varchar(255);" json:"session_token"`
 	STExpires      time.Time `gorm:"type:timestamp;" json:"st_expires"`
 	RefreshToken   string    `gorm:"type:varchar(255);" json:"refresh_token"`
