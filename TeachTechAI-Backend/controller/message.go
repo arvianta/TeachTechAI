@@ -62,12 +62,11 @@ func (mc *messageController) CreateMessage(ctx *gin.Context) {
 		return
 	}
 
-	if valid, err := mc.conversationService.ValidateUserConversation(userID, convoID); !valid || err != nil{
+	if valid, err := mc.conversationService.ValidateUserConversation(userID, convoID); !valid || err != nil {
 		response := common.BuildErrorResponse("Gagal Membuat Pesan", "Anda Tidak Memiliki Akses", common.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 		return
 	}
-
 
 	message, err := mc.messageService.CreateMessage(ctx.Request.Context(), msg)
 	if err != nil {
@@ -82,22 +81,45 @@ func (mc *messageController) CreateMessage(ctx *gin.Context) {
 
 func (mc *messageController) GetMessagesFromConversation(ctx *gin.Context) {
 	conversationID := ctx.Param("id")
-	if conversationID == "" {
-		response := common.BuildErrorResponse("Failed to get conversation", "Invalid conversation ID", common.EmptyObj{})
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+
+	convoID, err := uuid.Parse(conversationID)
+	if err != nil {
+		response := common.BuildErrorResponse("Invalid conversation ID", "Invalid ID format", common.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	var convoID dto.GetMessagesFromConversationDTO
-	convoID.ConversationID = conversationID
+	token := ctx.MustGet("token").(string)
+	userID, err := mc.jwtService.GetUserIDByToken(token)
+	if err != nil {
+		response := common.BuildErrorResponse("Failed to fetch messages", "Invalid token", nil)
+		ctx.JSON(http.StatusUnauthorized, response)
+		return
+	}
 
-	messages, err := mc.messageService.GetMessagesFromConversation(ctx.Request.Context(), convoID)
+	if valid, err := mc.conversationService.ValidateUserConversation(userID, convoID); !valid || err != nil {
+		response := common.BuildErrorResponse("Failed to fetch messages", "You do not have access to this conversation", common.EmptyObj{})
+		ctx.JSON(http.StatusUnauthorized, response)
+		return
+	}
+
+	var convoDTO dto.GetMessagesFromConversationDTO
+	convoDTO.ConversationID = conversationID
+
+	messagesDTO, err := mc.messageService.GetMessagesFromConversation(ctx.Request.Context(), convoDTO)
 	if err != nil {
 		response := common.BuildErrorResponse("Failed to fetch messages", err.Error(), common.EmptyObj{})
 		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	res := common.BuildResponse(true, "Messages fetched successfully", messages)
+	// IF WAMT RETURN ERROR WHEN MESSAGES IN A CONVO IS NULL
+	// if len(messagesDTO.Messages) == 0 {
+	// 	response := common.BuildErrorResponse("No messages found", "The conversation does not contain any messages", common.EmptyObj{})
+	// 	ctx.JSON(http.StatusNotFound, response)
+	// 	return
+	// }
+
+	res := common.BuildResponse(true, "Messages fetched successfully", messagesDTO)
 	ctx.JSON(http.StatusOK, res)
 }
