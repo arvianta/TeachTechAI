@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/user_response"
+    android:layout_alignParentEnd="true"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:cardPreventCornerOverlap="false">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="14dp"
+        android:background="@color/kaizen_primary"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/profile_user" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/poppins_medium"
+                android:textColor="@color/white"
+                android:text="User" />
+        </LinearLayout>
+        <TextView
+            android:id="@+id/tvMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_light"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/white"
+            android:text="Hello! How can I assist you today?" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
