@@ -21,6 +21,7 @@ type UserRepository interface {
 	InvalidateUserToken(userID uuid.UUID) error
 	GetUserSessionToken(userID uuid.UUID) (string, error)
 	UpdateProfilePicture(ctx context.Context, userID uuid.UUID, url string) error
+	ClearProfilePicture(ctx context.Context, userID uuid.UUID) error
 }
 
 type userConnection struct {
@@ -137,6 +138,14 @@ func (db *userConnection) GetUserSessionToken(userID uuid.UUID) (string, error) 
 
 func (db *userConnection) UpdateProfilePicture(ctx context.Context, userID uuid.UUID, url string) error {
 	uc := db.connection.WithContext(ctx).Model(&entity.User{}).Where("id = ?", userID).Update("profile_picture", url)
+	if uc.Error != nil {
+		return uc.Error
+	}
+	return nil
+}
+
+func (db *userConnection) ClearProfilePicture(ctx context.Context, userID uuid.UUID) error {
+	uc := db.connection.WithContext(ctx).Model(&entity.User{}).Where("id = ?", userID).Update("profile_picture", "")
 	if uc.Error != nil {
 		return uc.Error
 	}

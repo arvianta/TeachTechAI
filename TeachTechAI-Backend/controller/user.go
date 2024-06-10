@@ -23,6 +23,7 @@ type UserController interface {
 	UpdateUserInfo(ctx *gin.Context)
 	UploadUserProfilePicture(ctx *gin.Context)
 	GetUserProfilePicture(ctx *gin.Context)
+	DeleteUserProfilePicture(ctx *gin.Context)
 	DeleteUser(ctx *gin.Context)
 	Logout(ctx *gin.Context)
 }
@@ -319,4 +320,24 @@ func (uc *userController) GetUserProfilePicture(ctx *gin.Context) {
 	
 	ctx.File(res)
 	_ = utils.DeleteTempFile(res)
+}
+
+func (uc *userController) DeleteUserProfilePicture(ctx *gin.Context) {
+	token := ctx.MustGet("token").(string)
+	userID, err := uc.jwtService.GetUserIDByToken(token)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Memproses Request", "Token Tidak Valid", nil)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
+		return
+	}
+
+	err = uc.userService.DeleteUserProfilePicture(ctx.Request.Context(), userID)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Memproses Request", "Gagal Menghapus File dari Cloud", nil)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, response)
+		return
+	}
+
+	res := common.BuildResponse(true, "Berhasil menghapus foto profil", common.EmptyObj{})
+	ctx.JSON(http.StatusOK, res)
 }

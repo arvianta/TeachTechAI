@@ -27,6 +27,7 @@ type UserService interface {
 	StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error
 	UploadUserProfilePicture(ctx context.Context, userID uuid.UUID, localFilePath string) error
 	GetUserProfilePicture(ctx context.Context, userID uuid.UUID) (string, error)
+	DeleteUserProfilePicture(ctx context.Context, userID uuid.UUID) error
 }
 
 type userService struct {
@@ -157,4 +158,27 @@ func (us *userService) GetUserProfilePicture(ctx context.Context, userID uuid.UU
 	}
 
 	return localFilePath, nil
+}
+
+func (us *userService) DeleteUserProfilePicture(ctx context.Context, userID uuid.UUID) error {
+	user, err := us.userRepository.FindUserByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	if user.ProfilePicture == "" {
+		return nil
+	}
+
+	err = utils.DeleteFileFromCloud(ctx, user.ProfilePicture)
+	if err != nil {
+		return err
+	}
+
+	err = us.userRepository.ClearProfilePicture(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
