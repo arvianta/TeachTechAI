@@ -2,10 +2,12 @@ package service
 
 import (
 	"context"
+	"errors"
 	"teach-tech-ai/dto"
 	"teach-tech-ai/entity"
 	"teach-tech-ai/helpers"
 	"teach-tech-ai/repository"
+	"teach-tech-ai/utils"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,16 +15,18 @@ import (
 )
 
 type UserService interface {
-	RegisterUser(ctx context.Context, userDTO dto.UserCreateDto) (entity.User, error)
+	RegisterUser(ctx context.Context, userDTO dto.UserCreateDTO) (entity.User, error)
 	GetAllUser(ctx context.Context) ([]entity.User, error)
 	FindUserByEmail(ctx context.Context, email string) (entity.User, error)
 	Verify(ctx context.Context, email string, password string) (bool, error)
 	CheckUser(ctx context.Context, email string) (bool, error)
 	FindUserRoleByRoleID(roleID uuid.UUID) (string, error)
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
-	UpdateUser(ctx context.Context, userDTO dto.UserUpdateDto) error
+	UpdateUser(ctx context.Context, userDTO dto.UserUpdateInfoDTO) error
 	MeUser(ctx context.Context, userID uuid.UUID) (entity.User, error)
 	StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error
+	UploadUserProfilePicture(ctx context.Context, userID uuid.UUID, localFilePath string) error
+	GetUserProfilePicture(ctx context.Context, userID uuid.UUID) (string, error)
 }
 
 type userService struct {
@@ -37,7 +41,7 @@ func NewUserService(ur repository.UserRepository, rr repository.RoleRepository) 
 	}
 }
 
-func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateDto) (entity.User, error) {
+func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateDTO) (entity.User, error) {
 	user := entity.User{}
 	err := smapping.FillStruct(&user, smapping.MapFields(userDTO))
 	user.RoleID, _ = us.roleRepository.FindRoleIDByName(ctx, "USER")
@@ -82,7 +86,7 @@ func (us *userService) CheckUser(ctx context.Context, email string) (bool, error
 	return true, nil
 }
 
-func (us *userService) UpdateUser(ctx context.Context, userDTO dto.UserUpdateDto) error {
+func (us *userService) UpdateUser(ctx context.Context, userDTO dto.UserUpdateInfoDTO) error {
 	user := entity.User{}
 	err := smapping.FillStruct(&user, smapping.MapFields(userDTO))
 	if err != nil {
@@ -105,4 +109,52 @@ func (us *userService) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 
 func (us *userService) StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error {
 	return us.userRepository.StoreUserToken(userID, sessionToken, refreshToken, atx, rtx)
+}
+
+func (us *userService) UploadUserProfilePicture(ctx context.Context, userID uuid.UUID, localFilePath string) error {
+	user, err := us.userRepository.FindUserByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	if user.ProfilePicture != "" {
+		err := utils.DeleteFileFromCloud(ctx, user.ProfilePicture)
+		if err != nil {
+			return err
+		}
+	}
+	
+	filename, err := utils.UploadFileToCloud(ctx, localFilePath, userID)
+	if err != nil {
+		return err
+	}
+
+	err = us.userRepository.UpdateProfilePicture(ctx, userID, filename)
+	if err != nil {
+		return err
+	}
+
+	_ = utils.DeleteTempFile(localFilePath)
+
+	return nil
+}
+
+func (us *userService) GetUserProfilePicture(ctx context.Context, userID uuid.UUID) (string, error) {
+	user, err := us.userRepository.FindUserByID(ctx, userID)
+	if err != nil {
+		return "", err
+	}
+
+	localFilePath := "/tmp/" + user.ProfilePicture
+
+	if user.ProfilePicture == "" {
+		return "", errors.New("profile picture not found")
+	}
+
+	err = utils.DownloadFileFromCloud(ctx, user.ProfilePicture, localFilePath)
+	if err != nil {
+		return "", err
+	}
+
+	return localFilePath, nil
 }

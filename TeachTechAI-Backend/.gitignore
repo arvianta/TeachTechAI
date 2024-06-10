@@ -1,7 +1,7 @@
 .env
 # Dockerfile
 .dockerignore
-teachtechai-key.json
+access-bucket-key.json
 app.yaml
 .gcloudignore
 service.yaml

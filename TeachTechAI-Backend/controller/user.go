@@ -1,8 +1,10 @@
 package controller
 
 import (
+	"fmt"
 	"teach-tech-ai/common"
 	"teach-tech-ai/dto"
+	"teach-tech-ai/utils"
 
 	"net/http"
 	"teach-tech-ai/entity"
@@ -18,7 +20,9 @@ type UserController interface {
 	MeUser(ctx *gin.Context)
 	RefreshUser(ctx *gin.Context)
 	GetAllUser(ctx *gin.Context)
-	UpdateUser(ctx *gin.Context)
+	UpdateUserInfo(ctx *gin.Context)
+	UploadUserProfilePicture(ctx *gin.Context)
+	GetUserProfilePicture(ctx *gin.Context)
 	DeleteUser(ctx *gin.Context)
 	Logout(ctx *gin.Context)
 }
@@ -36,7 +40,7 @@ func NewUserController(us service.UserService, jwts service.JWTService) UserCont
 }
 
 func (uc *userController) RegisterUser(ctx *gin.Context) {
-	var user dto.UserCreateDto
+	var user dto.UserCreateDTO
 	err := ctx.ShouldBind(&user)
 	if err != nil {
 		response := common.BuildErrorResponse("Gagal Register", err.Error(), common.EmptyObj{})
@@ -207,8 +211,8 @@ func (uc *userController) GetAllUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-func (uc *userController) UpdateUser(ctx *gin.Context) {
-	var user dto.UserUpdateDto
+func (uc *userController) UpdateUserInfo(ctx *gin.Context) {
+	var user dto.UserUpdateInfoDTO
 	err := ctx.ShouldBind(&user)
 	if err != nil {
 		res := common.BuildErrorResponse("Gagal Mengupdate User", err.Error(), common.EmptyObj{})
@@ -258,4 +262,61 @@ func (uc *userController) DeleteUser(ctx *gin.Context) {
 	}
 	res := common.BuildResponse(true, "Berhasil Menghapus User", common.EmptyObj{})
 	ctx.JSON(http.StatusOK, res)
+}
+
+func (uc *userController) UploadUserProfilePicture(ctx *gin.Context) {
+	var file dto.UploadFileDTO
+	err := ctx.ShouldBind(&file)
+	if err != nil {
+		res := common.BuildErrorResponse("Gagal Mengupdate User", err.Error(), common.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	token := ctx.MustGet("token").(string)
+	userID, err := uc.jwtService.GetUserIDByToken(token)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Memproses Request", "Token Tidak Valid", nil)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
+		return
+	}
+
+	localFileName := fmt.Sprintf("%s_%s", userID.String(), file.File.Filename)
+	localFilePath := "/tmp/" + localFileName
+
+	// Save the file locally
+	if err := ctx.SaveUploadedFile(file.File, localFilePath); err != nil {
+		response := common.BuildErrorResponse("Gagal Memproses Request", "Gagal Menyimpan File", nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	if err := uc.userService.UploadUserProfilePicture(ctx.Request.Context(), userID, localFilePath); err != nil {
+		response := common.BuildErrorResponse("Gagal Memproses Request", "Gagal Upload File to Cloud", nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	res := common.BuildResponse(true, "Berhasil mengupload file", common.EmptyObj{})
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (uc *userController) GetUserProfilePicture(ctx *gin.Context) {
+	token := ctx.MustGet("token").(string)
+	userID, err := uc.jwtService.GetUserIDByToken(token)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Memproses Request", "Token Tidak Valid", nil)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
+		return
+	}
+
+	res, err := uc.userService.GetUserProfilePicture(ctx.Request.Context(), userID)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Memproses Request", "Gagal Download File from Cloud", nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+	
+	ctx.File(res)
+	_ = utils.DeleteTempFile(res)
 }
