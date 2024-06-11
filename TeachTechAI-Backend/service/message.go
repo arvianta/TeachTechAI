@@ -49,14 +49,15 @@ func (ms *messageService) CreateMessage(ctx context.Context, msgDTO dto.MessageR
 	}
 	// Message Request
 	message.Request = msgDTO.Request
-	response, err := utils.PromptAI(msgDTO.Request)
+	response, err := utils.PromptAI(msgDTO.Request, msgDTO.AIModelName)
 	if err != nil {
 		return dto.MessageResponseDTO{}, err
 	}
 	// Response and Datetime
-	message.Response = response.GeneratedText
+	message.Response = response.Choices[0].Message.Content
 	message.Datetime = time.Now()
-	message.NumOfTokens = response.Details.GeneratedTokens
+	message.NumOfTokens = response.Usage.CompletionTokens
+	message.FinishReason = response.Choices[0].FinishReason
 	// Store Message to DB
 	message, err = ms.messageRepository.StoreMessage(message)
 	if err != nil {

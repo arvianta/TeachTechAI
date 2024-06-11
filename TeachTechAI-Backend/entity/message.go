@@ -16,6 +16,7 @@ type Message struct {
     Conversation   Conversation   `gorm:"foreignkey:ConversationID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
     AIModelID      uuid.UUID      `gorm:"type:char(36);not null" json:"aimodel_id"`
     NumOfTokens    int            `gorm:"type:int;not null" json:"num_of_tokens"`
+    FinishReason   string         `gorm:"type:char(256);not null" json:"finish_reason"`
     AIModel        AIModel        `gorm:"foreignkey:AIModelID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
     DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
 }
