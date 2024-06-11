@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Conversation struct {
@@ -15,4 +16,9 @@ type Conversation struct {
     User      User           `gorm:"foreignkey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
     
     Timestamp
+}
+
+func (cnv *Conversation) BeforeCreate(tx *gorm.DB) error {
+	cnv.ID = uuid.New()
+	return nil
 }

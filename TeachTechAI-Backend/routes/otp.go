@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func OTPRoutes(router *gin.Engine, OTPController controller.OTPController) {
+func OTPRoutes(router *gin.Engine, OTPController controller.OTPTwilioController) {
 	otpRoutes := router.Group("/api/otp")
 	{
 		otpRoutes.POST("/send", OTPController.SendSMS)

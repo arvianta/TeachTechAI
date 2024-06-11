@@ -11,8 +11,10 @@ import (
 func UserRoutes(router *gin.Engine, UserController controller.UserController, jwtService service.JWTService) {
 	userRoutes := router.Group("/api/user")
 	{
-		userRoutes.POST("/register", UserController.RegisterUser)
 		userRoutes.GET("", middleware.Authenticate(jwtService), UserController.GetAllUser)
+		userRoutes.POST("/register", UserController.RegisterUser)
+		userRoutes.POST("/send-otp", UserController.SendVerificationOTPByEmail)
+		userRoutes.POST("/verify-otp", UserController.VerifyEmailWithOTP)
 		userRoutes.POST("/login", UserController.LoginUser)
 		userRoutes.DELETE("/delete", middleware.Authenticate(jwtService), UserController.DeleteUser)
 		userRoutes.PATCH("/update", middleware.Authenticate(jwtService), UserController.UpdateUserInfo)

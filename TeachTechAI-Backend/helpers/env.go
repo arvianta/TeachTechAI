@@ -1,8 +1,9 @@
-package utils
+package helpers
 
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -20,4 +21,16 @@ func MustGetenv(k string) string {
 		log.Fatalf("%s environment variable not set.", k)
 	}
 	return v
+}
+
+func MustGetenvInt(k string) int {
+	v := os.Getenv(k)
+	if v == "" {
+		log.Fatalf("%s environment variable not set.", k)
+	}
+	num, err := strconv.Atoi(v)
+	if err != nil {
+		log.Fatalf("Failed to convert %s to int: %v", k, err)
+	}
+	return num
 }

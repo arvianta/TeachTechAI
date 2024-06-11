@@ -1,7 +1,7 @@
 package service
 
 import (
-	"teach-tech-ai/utils"
+	"teach-tech-ai/helpers"
 
 	"github.com/gorilla/sessions"
 	"github.com/markbates/goth"
@@ -32,22 +32,22 @@ func NewOAuthService() OAuthService {
 }
 
 func getClientID() string {
-	clientID := utils.MustGetenv("GOOGLE_CLIENT_ID")
+	clientID := helpers.MustGetenv("GOOGLE_CLIENT_ID")
 	return clientID
 }
 
 func getClientSecret() string {
-	clientSecret := utils.MustGetenv("GOOGLE_CLIENT_SECRET")
+	clientSecret := helpers.MustGetenv("GOOGLE_CLIENT_SECRET")
 	return clientSecret
 }
 
 func getCallBackURL() string {
-	callBackURL := utils.MustGetenv("CALLBACK_URL")
+	callBackURL := helpers.MustGetenv("CALLBACK_URL")
 	return callBackURL
 }
 
 func getGoogleSecretKey() string {
-	googleSecretKey := utils.MustGetenv("GOOGLE_SECRET")
+	googleSecretKey := helpers.MustGetenv("GOOGLE_SECRET")
 	return googleSecretKey
 }
 

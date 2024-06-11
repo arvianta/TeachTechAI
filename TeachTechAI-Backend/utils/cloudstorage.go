@@ -7,6 +7,7 @@ import (
 	"mime"
 	"os"
 	"path/filepath"
+	"teach-tech-ai/helpers"
 	"time"
 
 	"cloud.google.com/go/storage"
@@ -15,8 +16,8 @@ import (
 )
 
 var (
-	bucketName     = MustGetenv("STORAGE_BUCKET_NAME")
-	serviceKeyPath = MustGetenv("STORAGE_BUCKET_KEY_PATH")
+	bucketName     = helpers.MustGetenv("STORAGE_BUCKET_NAME")
+	serviceKeyPath = helpers.MustGetenv("STORAGE_BUCKET_KEY_PATH")
 )
 
 func generateObjectName(ext string, userID uuid.UUID) string {
@@ -27,19 +28,19 @@ func generateObjectName(ext string, userID uuid.UUID) string {
 func UploadFileToCloud(ctx context.Context, localFilePath string, userID uuid.UUID) (string, error) {
     client, err := storage.NewClient(ctx, option.WithCredentialsFile(serviceKeyPath))
     if err != nil {
-        return "", fmt.Errorf("failed to create client: %w", err)
+        return "", err
     }
     defer client.Close()
 
     file, err := os.Open(localFilePath)
     if err != nil {
-        return "", fmt.Errorf("failed to open file: %w", err)
+        return "", err
     }
     defer file.Close()
 
     ext := filepath.Ext(localFilePath)
 	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
-		return "", fmt.Errorf("file type not allowed")
+		return "", err
 	}
     objectName := generateObjectName(ext, userID)
 
@@ -52,10 +53,10 @@ func UploadFileToCloud(ctx context.Context, localFilePath string, userID uuid.UU
     }
 
     if _, err := io.Copy(wc, file); err != nil {
-        return "", fmt.Errorf("failed to write file to GCS: %w", err)
+        return "", err
     }
     if err := wc.Close(); err != nil {
-        return "", fmt.Errorf("failed to close writer: %w", err)
+        return "", err
     }
 
     return objectName, nil
@@ -64,8 +65,7 @@ func UploadFileToCloud(ctx context.Context, localFilePath string, userID uuid.UU
 func DownloadFileFromCloud(ctx context.Context, objectName, localFilePath string) error {
     client, err := storage.NewClient(ctx, option.WithCredentialsFile(serviceKeyPath))
     if err != nil {
-        fmt.Printf("failed to create client: %v\n", err)
-		return fmt.Errorf("failed to create client: %w", err)
+		return err
     }
     defer client.Close()
 
@@ -74,21 +74,18 @@ func DownloadFileFromCloud(ctx context.Context, objectName, localFilePath string
 
 	file, err := os.Create(localFilePath)
     if err != nil {
-        fmt.Printf("failed to create local file: %v\n", err)
-		return fmt.Errorf("failed to create local file: %w", err)
+		return err
     }
     defer file.Close()
 	
 	rc, err := client.Bucket(bucketName).Object(objectName).NewReader(ctx)
     if err != nil {
-        fmt.Printf("failed to create reader: %v\n", err)
-		return fmt.Errorf("failed to create reader: %w", err)
+		return err
     }
     defer rc.Close()
 
     if _, err := io.Copy(file, rc); err != nil {
-        fmt.Printf("failed to copy file to local path: %v\n", err)
-		return fmt.Errorf("failed to copy file to local path: %w", err)
+		return err
     }
 
     return nil
@@ -97,13 +94,13 @@ func DownloadFileFromCloud(ctx context.Context, objectName, localFilePath string
 func DeleteFileFromCloud(ctx context.Context, fileName string) error {
 	client, err := storage.NewClient(ctx, option.WithCredentialsFile(serviceKeyPath))
 	if err != nil {
-		return fmt.Errorf("failed to create client: %w", err)
+		return err
 	}
 	defer client.Close()
 
 	object := client.Bucket(bucketName).Object(fileName)
 	if err := object.Delete(ctx); err != nil {
-		return fmt.Errorf("failed to delete object %s: %w", fileName, err)
+		return err
 	}
 
 	return nil

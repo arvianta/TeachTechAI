@@ -35,7 +35,6 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 }
 
 func (db *userConnection) RegisterUser(ctx context.Context, user entity.User) (entity.User, error) {
-	user.ID = uuid.New()
 	uc := db.connection.WithContext(ctx).Create(&user)
 	if uc.Error != nil {
 		return entity.User{}, uc.Error
@@ -151,3 +150,4 @@ func (db *userConnection) ClearProfilePicture(ctx context.Context, userID uuid.U
 	}
 	return nil
 }
+

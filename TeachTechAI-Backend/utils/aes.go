@@ -8,10 +8,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"teach-tech-ai/helpers"
 )
 
 var (
-	KEY = MustGetenv("AES_KEY")
+	KEY = helpers.MustGetenv("AES_KEY")
 )
 
 // https://www.melvinvivas.com/how-to-encrypt-and-decrypt-data-using-aes

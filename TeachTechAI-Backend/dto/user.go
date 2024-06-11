@@ -22,6 +22,15 @@ type UserUpdateInfoDTO struct {
 	DateOfBirth    time.Time `json:"date_of_birth" binding:"required"`
 }
 
+type SendUserOTPByEmail struct {
+	Email string `json:"email" form:"email" binding:"required"`
+}
+
+type VerifyUserOTPByEmail struct {
+	Email string `json:"email" form:"email" binding:"required"`
+	OTP   string `json:"otp" form:"otp" binding:"required"`
+}
+
 type UserUpdateEmailDTO struct {
 	Email string `json:"email" form:"email" binding:"required"`
 }
@@ -37,6 +46,12 @@ type UploadFileDTO struct {
 type UserLoginDTO struct {
 	Email    string `json:"email" form:"email" binding:"email"`
 	Password string `json:"password" form:"password" binding:"required"`
+}
+
+type UserLoginResponseDTO struct {
+	SessionToken string `json:"session_token"`
+	RefreshToken string `json:"refresh_token"`
+	Role  		 string `json:"role"`
 }
 
 type UserRefreshDTO struct {

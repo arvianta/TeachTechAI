@@ -7,7 +7,6 @@ import (
 	"teach-tech-ai/utils"
 
 	"net/http"
-	"teach-tech-ai/entity"
 	"teach-tech-ai/service"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +15,8 @@ import (
 
 type UserController interface {
 	RegisterUser(ctx *gin.Context)
+	SendVerificationOTPByEmail(ctx *gin.Context)
+	VerifyEmailWithOTP(ctx *gin.Context)
 	LoginUser(ctx *gin.Context)
 	MeUser(ctx *gin.Context)
 	RefreshUser(ctx *gin.Context)
@@ -48,7 +49,6 @@ func (uc *userController) RegisterUser(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
-	
 	checkUser, _ := uc.userService.CheckUser(ctx.Request.Context(), user.Email)
 	if checkUser {
 		res := common.BuildErrorResponse("User Sudah Terdaftar", "false", common.EmptyObj{})
@@ -61,9 +61,48 @@ func (uc *userController) RegisterUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
-	//
 
 	res := common.BuildResponse(true, "Berhasil Menambahkan User", common.EmptyObj{})
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (uc *userController) SendVerificationOTPByEmail(ctx *gin.Context) {
+	var userVerifyDTO dto.SendUserOTPByEmail
+	err := ctx.ShouldBind(&userVerifyDTO)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Mengirim Email Verifikasi", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	err = uc.userService.SendUserOTPByEmail(ctx.Request.Context(), userVerifyDTO)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Mengirim Email Verifikasi", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	res := common.BuildResponse(true, "Berhasil Mengirim Email Verifikasi", common.EmptyObj{})
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (uc *userController) VerifyEmailWithOTP(ctx *gin.Context) {
+	var userVerifyDTO dto.VerifyUserOTPByEmail
+	err := ctx.ShouldBind(&userVerifyDTO)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Verifikasi Email", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	err = uc.userService.VerifyUserOTPByEmail(ctx.Request.Context(), userVerifyDTO)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Verifikasi Email", err.Error(), common.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	res := common.BuildResponse(true, "Berhasil Verifikasi Email", common.EmptyObj{})
 	ctx.JSON(http.StatusOK, res)
 }
 
@@ -76,9 +115,9 @@ func (uc *userController) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	res, _ := uc.userService.Verify(ctx.Request.Context(), userLoginDTO.Email, userLoginDTO.Password)
+	res, err := uc.userService.Verify(ctx.Request.Context(), userLoginDTO.Email, userLoginDTO.Password)
 	if !res {
-		response := common.BuildErrorResponse("Gagal Login", "Email atau Password Salah", common.EmptyObj{})
+		response := common.BuildErrorResponse("Gagal Login", err.Error(), common.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
@@ -107,7 +146,7 @@ func (uc *userController) LoginUser(ctx *gin.Context) {
 		response := common.BuildErrorResponse("Gagal Login", err.Error(), common.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 	}
-	userResponse := entity.Authorization{
+	userResponse := dto.UserLoginResponseDTO{
 		SessionToken: sessionToken,
 		RefreshToken: refreshToken,
 		Role: role,
@@ -179,7 +218,7 @@ func (uc *userController) RefreshUser(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 	}
 
-	res := common.BuildResponse(true, "Berhasil Refresh Token", entity.Authorization{
+	res := common.BuildResponse(true, "Berhasil Refresh Token", dto.UserLoginResponseDTO{
 		SessionToken: newSessionToken,
 		RefreshToken: newRefreshToken,
 		Role: role,

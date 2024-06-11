@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"teach-tech-ai/repository"
 	"time"
@@ -76,7 +75,6 @@ func (j *jwtService) GenerateToken(userID uuid.UUID, role string) (string, strin
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
 	accessT, err := accessToken.SignedString([]byte(j.secretKey))
 	if err != nil {
-		log.Println(err)
 		return "", "", time.Time{}, time.Time{}, err
 	}
 
@@ -93,7 +91,6 @@ func (j *jwtService) GenerateToken(userID uuid.UUID, role string) (string, strin
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
 	refreshT, err := refreshToken.SignedString([]byte(j.refreshSecretKey))
 	if err != nil {
-		log.Println(err)
 		return "", "", time.Time{}, time.Time{}, err
 	}
 

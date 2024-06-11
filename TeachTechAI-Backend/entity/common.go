@@ -12,12 +12,6 @@ type Timestamp struct {
 	DeletedAt 		gorm.DeletedAt
 }
 
-type Authorization struct {
-	SessionToken string `json:"session_token"`
-	RefreshToken string `json:"refresh_token"`
-	Role  		 string `json:"role"`
-}
-
 type OTPData struct {
 	PhoneNumber string `json:"phone_number,omitempty" validate:"required"`
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"teach-tech-ai/helpers"
 	"time"
 )
 
@@ -34,7 +35,7 @@ type Details struct {
 }
 
 var (
-	ENDPOINT = MustGetenv("ML_ENDPOINT")
+	ENDPOINT = helpers.MustGetenv("ML_ENDPOINT")
 )
 
 func PromptAI(inputs string) (*Response, error) {

@@ -16,6 +16,8 @@ import (
 
 type UserService interface {
 	RegisterUser(ctx context.Context, userDTO dto.UserCreateDTO) (entity.User, error)
+	SendUserOTPByEmail(ctx context.Context, userVerifyDTO dto.SendUserOTPByEmail) error
+	VerifyUserOTPByEmail(ctx context.Context, userVerifyDTO dto.VerifyUserOTPByEmail) error
 	GetAllUser(ctx context.Context) ([]entity.User, error)
 	FindUserByEmail(ctx context.Context, email string) (entity.User, error)
 	Verify(ctx context.Context, email string, password string) (bool, error)
@@ -33,23 +35,82 @@ type UserService interface {
 type userService struct {
 	userRepository repository.UserRepository
 	roleRepository repository.RoleRepository
+	otpEmailService OTPEmailService
 }
 
-func NewUserService(ur repository.UserRepository, rr repository.RoleRepository) UserService {
+func NewUserService(ur repository.UserRepository, rr repository.RoleRepository, os OTPEmailService) UserService {
 	return &userService{
 		userRepository: ur,
 		roleRepository: rr,
+		otpEmailService: os,
 	}
 }
 
-func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateDTO) (entity.User, error) {
-	user := entity.User{}
-	err := smapping.FillStruct(&user, smapping.MapFields(userDTO))
-	user.RoleID, _ = us.roleRepository.FindRoleIDByName(ctx, "USER")
+func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateDTO) (entity.User, error) {	
+	roleID, err := us.roleRepository.FindRoleIDByName(ctx, "USER")
+	if err != nil {
+		return entity.User{}, err
+	}
+
+	user := entity.User{
+		Email:          userDTO.Email,
+		Name:           userDTO.Name,
+		Password:       userDTO.Password,
+		RoleID:         roleID,
+		IsVerified:    	false,
+	}
+	
+	createdUser, err := us.userRepository.RegisterUser(ctx, user)
 	if err != nil {
 		return user, err
 	}
-	return us.userRepository.RegisterUser(ctx, user)
+
+	_, err = us.otpEmailService.SendOTPByEmail(ctx, createdUser.Email)
+	if err != nil {
+		return createdUser, err
+	}
+
+
+	return createdUser, nil
+}
+
+func (us *userService) SendUserOTPByEmail(ctx context.Context, userVerifyDTO dto.SendUserOTPByEmail) error {
+	user, err := us.userRepository.FindUserByEmail(ctx, userVerifyDTO.Email)
+	if err != nil {
+		return err
+	}
+
+	_, err = us.otpEmailService.SendOTPByEmail(ctx, user.Email)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (us *userService) VerifyUserOTPByEmail(ctx context.Context, userVerifyDTO dto.VerifyUserOTPByEmail) error {
+	user, err := us.userRepository.FindUserByEmail(ctx, userVerifyDTO.Email)
+	if err != nil {
+		return err
+	}
+
+	if user.IsVerified {
+		return errors.New("user already verified")
+	}
+
+	err = us.otpEmailService.VerifyOTPByEmail(ctx, user.Email, userVerifyDTO.OTP)
+	if err != nil {
+		return err
+	}
+
+	user.IsVerified = true
+
+	err = us.userRepository.UpdateUser(ctx, user)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (us *userService) GetAllUser(ctx context.Context) ([]entity.User, error) {
@@ -65,9 +126,12 @@ func (us *userService) Verify(ctx context.Context, email string, password string
 	if err != nil {
 		return false, err
 	}
+	if !res.IsVerified {
+		return false, errors.New("user belum terverifikasi")
+	}
 	CheckPassword, err := helpers.CheckPassword(res.Password, []byte(password))
 	if err != nil {
-		return false, err
+		return false, errors.New("email atau password salah")
 	}
 	if res.Email == email && CheckPassword {
 		return true, nil

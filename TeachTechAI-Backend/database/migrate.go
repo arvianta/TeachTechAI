@@ -14,6 +14,7 @@ func Migrate(db *gorm.DB) error {
 		entity.Conversation{},
 		entity.AIModel{},
 		entity.Message{},
+		entity.OTP{},
 	); err != nil {
 		return err
 	}

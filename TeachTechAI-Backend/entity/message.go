@@ -19,3 +19,8 @@ type Message struct {
     AIModel        AIModel        `gorm:"foreignkey:AIModelID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
     DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
 }
+
+func (msg *Message) BeforeCreate(tx *gorm.DB) error {
+	msg.ID = uuid.New()
+	return nil
+}
