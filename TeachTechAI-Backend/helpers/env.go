@@ -15,7 +15,7 @@ func MustGetenv(k string) string {
 			log.Fatalf("Error loading .env file: %v", err)
 		}
 	}
-	
+
 	v := os.Getenv(k)
 	if v == "" {
 		log.Fatalf("%s environment variable not set.", k)

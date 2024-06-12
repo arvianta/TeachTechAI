@@ -41,7 +41,7 @@ func (oes *otpEmailService) SendOTPByEmail(ctx context.Context, email string) (s
 	if existingOTP != nil && existingOTP.CreatedAt.Add(time.Minute).After(time.Now()) {
 		return "", errors.New("please wait for 1 minute before requesting another OTP")
 	}
-	
+
 	// Generate OTP
 	randomOTP := GenerateOTP()
 	expiresAt := time.Now().Add(time.Minute * 5)
@@ -91,8 +91,8 @@ func (oes *otpEmailService) VerifyOTPByEmail(ctx context.Context, email, otp str
 	}
 
 	if storedOTP.ExpiresAt.Before(time.Now()) {
-        return errors.New("OTP has expired")
-    }
+		return errors.New("OTP has expired")
+	}
 
 	// Delete OTP from database after successful verification
 	err = oes.otpRepository.DeleteOTP(ctx, email)

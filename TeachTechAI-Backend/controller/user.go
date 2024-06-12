@@ -123,7 +123,7 @@ func (uc *userController) LoginUser(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
-	
+
 	user, err := uc.userService.FindUserByEmail(ctx.Request.Context(), userLoginDTO.Email)
 	if err != nil {
 		response := common.BuildErrorResponse("Gagal Login", err.Error(), common.EmptyObj{})
@@ -136,7 +136,7 @@ func (uc *userController) LoginUser(ctx *gin.Context) {
 		response := common.BuildErrorResponse("Gagal Login", err.Error(), common.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 	}
-	
+
 	role, err := uc.userService.FindUserRoleByRoleID(roleID)
 	if err != nil {
 		response := common.BuildErrorResponse("Gagal Login", err.Error(), common.EmptyObj{})
@@ -151,7 +151,7 @@ func (uc *userController) LoginUser(ctx *gin.Context) {
 	userResponse := dto.UserLoginResponseDTO{
 		SessionToken: sessionToken,
 		RefreshToken: refreshToken,
-		Role: role,
+		Role:         role,
 	}
 
 	err = uc.userService.StoreUserToken(user.ID, sessionToken, refreshToken, atx, rtx)
@@ -159,7 +159,7 @@ func (uc *userController) LoginUser(ctx *gin.Context) {
 		response := common.BuildErrorResponse("Gagal Login", err.Error(), common.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 	}
-	
+
 	response := common.BuildResponse(true, "Berhasil Login", userResponse)
 	ctx.JSON(http.StatusOK, response)
 }
@@ -223,7 +223,7 @@ func (uc *userController) RefreshUser(ctx *gin.Context) {
 	res := common.BuildResponse(true, "Berhasil Refresh Token", dto.UserLoginResponseDTO{
 		SessionToken: newSessionToken,
 		RefreshToken: newRefreshToken,
-		Role: role,
+		Role:         role,
 	})
 	ctx.JSON(http.StatusOK, res)
 }
@@ -261,7 +261,7 @@ func (uc *userController) UpdateUserInfo(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
-	
+
 	token := ctx.MustGet("token").(string)
 	userID, err := uc.jwtService.GetUserIDByToken(token)
 	if err != nil {
@@ -406,7 +406,7 @@ func (uc *userController) GetUserProfilePicture(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
-	
+
 	ctx.File(res)
 	_ = utils.DeleteTempFile(res)
 }

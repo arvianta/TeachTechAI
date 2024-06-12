@@ -36,33 +36,33 @@ type UserService interface {
 }
 
 type userService struct {
-	userRepository repository.UserRepository
-	roleRepository repository.RoleRepository
+	userRepository  repository.UserRepository
+	roleRepository  repository.RoleRepository
 	otpEmailService OTPEmailService
 }
 
 func NewUserService(ur repository.UserRepository, rr repository.RoleRepository, os OTPEmailService) UserService {
 	return &userService{
-		userRepository: ur,
-		roleRepository: rr,
+		userRepository:  ur,
+		roleRepository:  rr,
 		otpEmailService: os,
 	}
 }
 
-func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateDTO) (entity.User, error) {	
+func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateDTO) (entity.User, error) {
 	roleID, err := us.roleRepository.FindRoleIDByName(ctx, "USER")
 	if err != nil {
 		return entity.User{}, err
 	}
 
 	user := entity.User{
-		Email:          userDTO.Email,
-		Name:           userDTO.Name,
-		Password:       userDTO.Password,
-		RoleID:         roleID,
-		IsVerified:    	false,
+		Email:      userDTO.Email,
+		Name:       userDTO.Name,
+		Password:   userDTO.Password,
+		RoleID:     roleID,
+		IsVerified: false,
 	}
-	
+
 	createdUser, err := us.userRepository.RegisterUser(ctx, user)
 	if err != nil {
 		return user, err
@@ -72,7 +72,6 @@ func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateD
 	if err != nil {
 		return createdUser, err
 	}
-
 
 	return createdUser, nil
 }
@@ -167,7 +166,7 @@ func (us *userService) UpdateUser(ctx context.Context, userDTO dto.UserUpdateInf
 	return us.userRepository.UpdateUser(ctx, user)
 }
 
-func (us *userService) ChangePassword(ctx context.Context, userID uuid.UUID, passwordDTO dto.UserChangePassword) error {	
+func (us *userService) ChangePassword(ctx context.Context, userID uuid.UUID, passwordDTO dto.UserChangePassword) error {
 	user, err := us.userRepository.FindUserByID(ctx, userID)
 	if err != nil {
 		return err
@@ -252,7 +251,7 @@ func (us *userService) UploadUserProfilePicture(ctx context.Context, userID uuid
 			return err
 		}
 	}
-	
+
 	filename, err := utils.UploadFileToCloud(ctx, localFilePath, userID)
 	if err != nil {
 		return err

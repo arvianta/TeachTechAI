@@ -90,8 +90,8 @@ func (db *userConnection) StoreUserToken(userID uuid.UUID, sessionToken string, 
 	uc := db.connection.Model(&user).Updates(map[string]interface{}{
 		"session_token": sessionToken,
 		"refresh_token": refreshToken,
-		"st_expires": atx,
-		"rt_expires": rtx,
+		"st_expires":    atx,
+		"rt_expires":    rtx,
 	})
 	if uc.Error != nil {
 		return uc.Error
@@ -112,13 +112,13 @@ func (db *userConnection) FindUserRoleIDByID(userID uuid.UUID) (uuid.UUID, error
 	return roleID, nil
 }
 
-func (db *userConnection) InvalidateUserToken(userID uuid.UUID) (error) {
+func (db *userConnection) InvalidateUserToken(userID uuid.UUID) error {
 	user := entity.User{ID: userID}
 	uc := db.connection.Model(&user).Updates(map[string]interface{}{
 		"session_token": "",
 		"refresh_token": "",
-		"st_expires": time.Time{},
-		"rt_expires": time.Time{},
+		"st_expires":    time.Time{},
+		"rt_expires":    time.Time{},
 	})
 	if uc.Error != nil {
 		return uc.Error
@@ -150,4 +150,3 @@ func (db *userConnection) ClearProfilePicture(ctx context.Context, userID uuid.U
 	}
 	return nil
 }
-

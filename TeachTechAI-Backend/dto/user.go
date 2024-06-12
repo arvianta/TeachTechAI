@@ -8,18 +8,18 @@ import (
 )
 
 type UserCreateDTO struct {
-	ID             uuid.UUID `gorm:"type:char(36);primary_key;not_null" json:"id"`
-	Email          string    `json:"email" form:"email" binding:"required"`
-	Name           string    `json:"name" form:"name" binding:"required"`
-	Password       string    `json:"password" form:"password" binding:"required"`
+	ID       uuid.UUID `gorm:"type:char(36);primary_key;not_null" json:"id"`
+	Email    string    `json:"email" form:"email" binding:"required"`
+	Name     string    `json:"name" form:"name" binding:"required"`
+	Password string    `json:"password" form:"password" binding:"required"`
 }
 
 type UserUpdateInfoDTO struct {
-	ID             uuid.UUID `gorm:"type:char(36);primary_key;not_null" json:"id"`
-	GoogleID       string    `gorm:"type:varchar(255);" json:"google_id"`
-	Name           string    `json:"name" binding:"required"`
-	AsalInstansi   string    `json:"asal_instansi" binding:"required"`
-	DateOfBirth    time.Time `json:"date_of_birth" binding:"required"`
+	ID           uuid.UUID `gorm:"type:char(36);primary_key;not_null" json:"id"`
+	GoogleID     string    `gorm:"type:varchar(255);" json:"google_id"`
+	Name         string    `json:"name" binding:"required"`
+	AsalInstansi string    `json:"asal_instansi" binding:"required"`
+	DateOfBirth  time.Time `json:"date_of_birth" binding:"required"`
 }
 
 type SendUserOTPByEmail struct {
@@ -44,8 +44,8 @@ type UploadFileDTO struct {
 }
 
 type UserChangePassword struct {
-	OldPassword string 		`json:"old_password" form:"old_password" binding:"required"`
-	NewPassword string 		`json:"new_password" form:"new_password" binding:"required"`
+	OldPassword string `json:"old_password" form:"old_password" binding:"required"`
+	NewPassword string `json:"new_password" form:"new_password" binding:"required"`
 }
 
 type ForgotPassword struct {
@@ -60,7 +60,7 @@ type UserLoginDTO struct {
 type UserLoginResponseDTO struct {
 	SessionToken string `json:"session_token"`
 	RefreshToken string `json:"refresh_token"`
-	Role  		 string `json:"role"`
+	Role         string `json:"role"`
 }
 
 type UserRefreshDTO struct {

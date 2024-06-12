@@ -27,7 +27,6 @@ func NewOTPTwilioService() OTPTwilioService {
 	}
 }
 
-
 func getTwilioAccountSID() string {
 	twilioAccountSID := helpers.MustGetenv("TWILIO_ACCOUNT_SID")
 	return twilioAccountSID
@@ -47,7 +46,6 @@ var client *twilio.RestClient = twilio.NewRestClientWithParams(twilio.ClientPara
 	Username: getTwilioAccountSID(),
 	Password: getTwilioAuthToken(),
 })
-
 
 func (o *otpTwilioService) TwilioSendOTP(phoneNumber string) (string, error) {
 	params := &twilioApi.CreateVerificationParams{}

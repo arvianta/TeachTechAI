@@ -16,35 +16,35 @@ import (
 )
 
 func main() {
-	if os.Getenv("APP_ENV") != "production" || os.Getenv("APP_ENV") != "staging"{
+	if os.Getenv("APP_ENV") != "production" || os.Getenv("APP_ENV") != "staging" {
 		err := godotenv.Load(".env")
 		if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+			log.Fatalf("Error loading .env file: %v", err)
 		}
 	}
-	
+
 	var (
-		db 						*gorm.DB 				   			= config.SetupDatabaseConnection()
-		otpEmailRepository  	repository.OTPEmailRepository  		= repository.NewOTPEmailRepository(db)
-		roleRepository 			repository.RoleRepository  			= repository.NewRoleRepository(db)
-		userRepository 			repository.UserRepository  			= repository.NewUserRepository(db)
-		conversationRepository 	repository.ConversationRepository 	= repository.NewconversationRepository(db)
-		messageRepository 		repository.MessageRepository 		= repository.NewMessageRepository(db)
-		aimodelRepository 		repository.AIModelRepository 		= repository.NewAIModelRepository(db)
-		
-		oauthService   			service.OAuthService       			= service.NewOAuthService()
-		otpEmailService 		service.OTPEmailService 			= service.NewOTPEmailService(otpEmailRepository)
-		otpTwilioService     	service.OTPTwilioService         	= service.NewOTPTwilioService()
-		jwtService 	  			service.JWTService 		   			= service.NewJWTService(userRepository, roleRepository)
-		userService    			service.UserService        			= service.NewUserService(userRepository, roleRepository, otpEmailService)
-		conversationService 	service.ConversationService 		= service.NewConversationService(conversationRepository)
-		messageService 			service.MessageService 				= service.NewMessageService(messageRepository, conversationRepository, aimodelRepository)
-		
-		oauthController 		controller.OAuthController 			= controller.NewOAuthController(oauthService)
-		otpTwilioController   	controller.OTPTwilioController   	= controller.NewOTPTwilioController(otpTwilioService)
-		userController 			controller.UserController  			= controller.NewUserController(userService, jwtService)
-		messageController 		controller.MessageController		= controller.NewMessageController(messageService, conversationService, jwtService)
-		conversationController 	controller.ConversationController 	= controller.NewConversationController(conversationService, jwtService)
+		db                     *gorm.DB                          = config.SetupDatabaseConnection()
+		otpEmailRepository     repository.OTPEmailRepository     = repository.NewOTPEmailRepository(db)
+		roleRepository         repository.RoleRepository         = repository.NewRoleRepository(db)
+		userRepository         repository.UserRepository         = repository.NewUserRepository(db)
+		conversationRepository repository.ConversationRepository = repository.NewconversationRepository(db)
+		messageRepository      repository.MessageRepository      = repository.NewMessageRepository(db)
+		aimodelRepository      repository.AIModelRepository      = repository.NewAIModelRepository(db)
+
+		oauthService        service.OAuthService        = service.NewOAuthService()
+		otpEmailService     service.OTPEmailService     = service.NewOTPEmailService(otpEmailRepository)
+		otpTwilioService    service.OTPTwilioService    = service.NewOTPTwilioService()
+		jwtService          service.JWTService          = service.NewJWTService(userRepository, roleRepository)
+		userService         service.UserService         = service.NewUserService(userRepository, roleRepository, otpEmailService)
+		conversationService service.ConversationService = service.NewConversationService(conversationRepository)
+		messageService      service.MessageService      = service.NewMessageService(messageRepository, conversationRepository, aimodelRepository)
+
+		oauthController        controller.OAuthController        = controller.NewOAuthController(oauthService)
+		otpTwilioController    controller.OTPTwilioController    = controller.NewOTPTwilioController(otpTwilioService)
+		userController         controller.UserController         = controller.NewUserController(userService, jwtService)
+		messageController      controller.MessageController      = controller.NewMessageController(messageService, conversationService, jwtService)
+		conversationController controller.ConversationController = controller.NewConversationController(conversationService, jwtService)
 	)
 	// migrate db
 	if err := database.Migrate(db); err != nil {

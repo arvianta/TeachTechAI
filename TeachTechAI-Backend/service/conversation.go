@@ -16,7 +16,7 @@ type ConversationService interface {
 }
 
 type conversationService struct {
-	conversationRepository 	repository.ConversationRepository
+	conversationRepository repository.ConversationRepository
 }
 
 func NewConversationService(cr repository.ConversationRepository) ConversationService {
@@ -27,11 +27,11 @@ func NewConversationService(cr repository.ConversationRepository) ConversationSe
 
 func (cs *conversationService) CreateConversation(userID uuid.UUID, topic string) (entity.Conversation, error) {
 	conversation := entity.Conversation{
-		UserID: userID,
+		UserID:    userID,
 		StartTime: time.Now(),
-		Topic: topic,
+		Topic:     topic,
 	}
-	
+
 	return cs.conversationRepository.StoreConversation(conversation)
 }
 
@@ -50,7 +50,7 @@ func (cs *conversationService) ValidateUserConversation(userID uuid.UUID, convoI
 
 func (cs *conversationService) GetConversationsFromUser(userID uuid.UUID) ([]entity.Conversation, error) {
 	return cs.conversationRepository.GetConversationsFromUser(userID)
-} 
+}
 
 func (cs *conversationService) DeleteConversation(convoID uuid.UUID) error {
 	return cs.conversationRepository.DeleteConversation(convoID)

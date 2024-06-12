@@ -21,74 +21,74 @@ var (
 )
 
 func generateObjectName(ext string, userID uuid.UUID) string {
-    t := time.Now().UTC()
-    return fmt.Sprintf("upload-%d%d%d-%d%d%d-%s%s", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), userID, ext)
+	t := time.Now().UTC()
+	return fmt.Sprintf("upload-%d%d%d-%d%d%d-%s%s", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), userID, ext)
 }
 
 func UploadFileToCloud(ctx context.Context, localFilePath string, userID uuid.UUID) (string, error) {
-    client, err := storage.NewClient(ctx, option.WithCredentialsFile(serviceKeyPath))
-    if err != nil {
-        return "", err
-    }
-    defer client.Close()
+	client, err := storage.NewClient(ctx, option.WithCredentialsFile(serviceKeyPath))
+	if err != nil {
+		return "", err
+	}
+	defer client.Close()
 
-    file, err := os.Open(localFilePath)
-    if err != nil {
-        return "", err
-    }
-    defer file.Close()
+	file, err := os.Open(localFilePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
 
-    ext := filepath.Ext(localFilePath)
+	ext := filepath.Ext(localFilePath)
 	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
 		return "", err
 	}
-    objectName := generateObjectName(ext, userID)
+	objectName := generateObjectName(ext, userID)
 
-    wc := client.Bucket(bucketName).Object(objectName).NewWriter(ctx)
+	wc := client.Bucket(bucketName).Object(objectName).NewWriter(ctx)
 
-    // Determine content type based on file extension
-    wc.ContentType = mime.TypeByExtension(ext)
-    if wc.ContentType == "" {
-        wc.ContentType = "application/octet-stream" // Default to binary stream if unknown
-    }
+	// Determine content type based on file extension
+	wc.ContentType = mime.TypeByExtension(ext)
+	if wc.ContentType == "" {
+		wc.ContentType = "application/octet-stream" // Default to binary stream if unknown
+	}
 
-    if _, err := io.Copy(wc, file); err != nil {
-        return "", err
-    }
-    if err := wc.Close(); err != nil {
-        return "", err
-    }
+	if _, err := io.Copy(wc, file); err != nil {
+		return "", err
+	}
+	if err := wc.Close(); err != nil {
+		return "", err
+	}
 
-    return objectName, nil
+	return objectName, nil
 }
 
 func DownloadFileFromCloud(ctx context.Context, objectName, localFilePath string) error {
-    client, err := storage.NewClient(ctx, option.WithCredentialsFile(serviceKeyPath))
-    if err != nil {
+	client, err := storage.NewClient(ctx, option.WithCredentialsFile(serviceKeyPath))
+	if err != nil {
 		return err
-    }
-    defer client.Close()
+	}
+	defer client.Close()
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second*50)
 	defer cancel()
 
 	file, err := os.Create(localFilePath)
-    if err != nil {
+	if err != nil {
 		return err
-    }
-    defer file.Close()
-	
+	}
+	defer file.Close()
+
 	rc, err := client.Bucket(bucketName).Object(objectName).NewReader(ctx)
-    if err != nil {
+	if err != nil {
 		return err
-    }
-    defer rc.Close()
+	}
+	defer rc.Close()
 
-    if _, err := io.Copy(file, rc); err != nil {
+	if _, err := io.Copy(file, rc); err != nil {
 		return err
-    }
+	}
 
-    return nil
+	return nil
 }
 
 func DeleteFileFromCloud(ctx context.Context, fileName string) error {

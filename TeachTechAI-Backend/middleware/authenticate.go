@@ -50,7 +50,6 @@ func Authenticate(jwtService service.JWTService) gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
-		
 
 		ctx.Set("token", authHeader)
 		ctx.Set("userID", userID)

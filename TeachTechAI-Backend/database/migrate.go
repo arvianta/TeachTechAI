@@ -19,6 +19,6 @@ func Migrate(db *gorm.DB) error {
 		return err
 	}
 	fmt.Println("Migration success!")
-	
+
 	return nil
 }

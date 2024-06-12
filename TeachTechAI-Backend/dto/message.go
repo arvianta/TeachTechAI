@@ -4,7 +4,7 @@ import "teach-tech-ai/entity"
 
 type MessageRequestDTO struct {
 	ConversationID string `json:"conversation_id" form:"conversation_id"`
-	Topic 		   string `json:"topic" form:"topic" binding:"required"`
+	Topic          string `json:"topic" form:"topic" binding:"required"`
 	Request        string `json:"request" form:"request" binding:"required"`
 	AIModelName    string `json:"aimodel" form:"aimodel" binding:"required"`
 }

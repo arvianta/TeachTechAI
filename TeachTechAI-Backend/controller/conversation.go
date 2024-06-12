@@ -62,7 +62,7 @@ func (cc *conversationController) DeleteConversation(ctx *gin.Context) {
 		return
 	}
 
-	if valid, err := cc.conversationService.ValidateUserConversation(userID, convoID); !valid || err != nil{
+	if valid, err := cc.conversationService.ValidateUserConversation(userID, convoID); !valid || err != nil {
 		response := common.BuildErrorResponse("Gagal Membuat Pesan", "Anda Tidak Memiliki Akses", common.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 		return

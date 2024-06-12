@@ -27,20 +27,20 @@ type jwtCustomClaim struct {
 }
 
 type jwtService struct {
-	secretKey 			string
-	refreshSecretKey 	string
-	issuer    			string
-	userRepository 		repository.UserRepository
-	roleRepository 		repository.RoleRepository
+	secretKey        string
+	refreshSecretKey string
+	issuer           string
+	userRepository   repository.UserRepository
+	roleRepository   repository.RoleRepository
 }
 
 func NewJWTService(ur repository.UserRepository, rr repository.RoleRepository) JWTService {
 	return &jwtService{
-		secretKey: getSecretKey(),
+		secretKey:        getSecretKey(),
 		refreshSecretKey: getRefreshSecretKey(),
-		issuer:    "teachtechai",
-		userRepository: ur,
-		roleRepository: rr,
+		issuer:           "teachtechai",
+		userRepository:   ur,
+		roleRepository:   rr,
 	}
 }
 

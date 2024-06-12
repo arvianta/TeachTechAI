@@ -68,7 +68,7 @@ func (o *otpTwilioController) VerifySMS(ctx *gin.Context) {
 
 	newVerifyOTP := entity.VerifyData{
 		PhoneNumber: verifyData.PhoneNumber,
-		Code: verifyData.Code,
+		Code:        verifyData.Code,
 	}
 
 	err := o.otpTwilioService.TwilioVerifyOTP(newVerifyOTP.PhoneNumber, newVerifyOTP.Code)

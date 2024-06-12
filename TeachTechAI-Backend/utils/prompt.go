@@ -18,19 +18,19 @@ const (
 )
 
 type Request struct {
-    FrequencyPenalty   int                    `json:"frequency_penalty"`
-    MaxTokens          int                    `json:"max_tokens"`
-    Messages           []map[string]string    `json:"messages"`
-    Model              string                 `json:"model"`
-    Stop               interface{}            `json:"stop"`
-    RepetitionPenalty  float64                `json:"repetition_penalty"`
-    Stream             bool                   `json:"stream"`
-    Temperature        float64                `json:"temperature"`
-    DoSample           bool                   `json:"do_sample"`
-    TopP               float64                `json:"top_p"`
-    Watermark          bool                   `json:"watermark"`
-    LengthPenalty      int                    `json:"length_penalty"`
-    EarlyStopping      bool                   `json:"early_stopping"`
+	FrequencyPenalty  int                 `json:"frequency_penalty"`
+	MaxTokens         int                 `json:"max_tokens"`
+	Messages          []map[string]string `json:"messages"`
+	Model             string              `json:"model"`
+	Stop              interface{}         `json:"stop"`
+	RepetitionPenalty float64             `json:"repetition_penalty"`
+	Stream            bool                `json:"stream"`
+	Temperature       float64             `json:"temperature"`
+	DoSample          bool                `json:"do_sample"`
+	TopP              float64             `json:"top_p"`
+	Watermark         bool                `json:"watermark"`
+	LengthPenalty     int                 `json:"length_penalty"`
+	EarlyStopping     bool                `json:"early_stopping"`
 }
 
 type Message struct {
@@ -49,17 +49,17 @@ type Response struct {
 }
 
 type Choice struct {
-	Index        int      `json:"index"`
-	Message      Message  `json:"message"`
+	Index        int       `json:"index"`
+	Message      Message   `json:"message"`
 	Logprobs     *LogProbs `json:"logprobs"`
-	FinishReason string   `json:"finish_reason"`
+	FinishReason string    `json:"finish_reason"`
 }
 
 type LogProbs struct {
-	Tokens        []string  `json:"tokens"`
-	TokenLogProbs []float64 `json:"token_logprobs"`
+	Tokens        []string             `json:"tokens"`
+	TokenLogProbs []float64            `json:"token_logprobs"`
 	TopLogProbs   []map[string]float64 `json:"top_logprobs"`
-	TextOffset    []int     `json:"text_offset"`
+	TextOffset    []int                `json:"text_offset"`
 }
 
 type Usage struct {
@@ -85,58 +85,58 @@ type Usage struct {
 // }
 
 func PromptAI(inputs string, model string) (*Response, error) {
-    requestBody := Request{
-        FrequencyPenalty: 1,
-        MaxTokens:        2048,
-        Messages: []map[string]string{
-            {
-                "role":    "system",
-                "content": SYSTEM_CONTENT,
-            },
-            {
-                "role":    "user",
-                "content": inputs,
-            },
-        },
-        Model:             model,
-        Stop:              nil,
-        RepetitionPenalty: 1.2,
-        Stream:            false,
-        Temperature:       0.6,
-        DoSample:          true,
-        TopP:              0.95,
-        Watermark:         false,
-        LengthPenalty:     1,
-        EarlyStopping:     true,
-    }
+	requestBody := Request{
+		FrequencyPenalty: 1,
+		MaxTokens:        2048,
+		Messages: []map[string]string{
+			{
+				"role":    "system",
+				"content": SYSTEM_CONTENT,
+			},
+			{
+				"role":    "user",
+				"content": inputs,
+			},
+		},
+		Model:             model,
+		Stop:              nil,
+		RepetitionPenalty: 1.2,
+		Stream:            false,
+		Temperature:       0.6,
+		DoSample:          true,
+		TopP:              0.95,
+		Watermark:         false,
+		LengthPenalty:     1,
+		EarlyStopping:     true,
+	}
 
-    body, err := json.Marshal(requestBody)
-    if err != nil {
-        return nil, fmt.Errorf("failed to marshal request body: %v", err)
-    }
+	body, err := json.Marshal(requestBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request body: %v", err)
+	}
 
-    req, err := http.NewRequest("POST", ENDPOINT, bytes.NewBuffer(body))
-    if err != nil {
-        return nil, fmt.Errorf("failed to create request: %v", err)
-    }
+	req, err := http.NewRequest("POST", ENDPOINT, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %v", err)
+	}
 
-    req.Header.Set("Content-Type", "application/json")
-    client := &http.Client{
-        Timeout: 30 * time.Second,
-    }
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
 
-    resp, err := client.Do(req)
-    if err != nil {
-        return nil, fmt.Errorf("failed to send request: %v", err)
-    }
-    defer resp.Body.Close()
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %v", err)
+	}
+	defer resp.Body.Close()
 
-    var response Response
-    if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-        return nil, fmt.Errorf("failed to decode response: %v", err)
-    }
+	var response Response
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %v", err)
+	}
 
-    return &response, nil
+	return &response, nil
 }
 
 // func PromptAIStream(ctx context.Context, inputs string, model string, responseChan chan string) (string, int, string, error) {
