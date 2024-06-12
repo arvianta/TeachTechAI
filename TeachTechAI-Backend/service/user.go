@@ -80,6 +80,10 @@ func (us *userService) SendUserOTPByEmail(ctx context.Context, userVerifyDTO dto
 		return err
 	}
 
+	if user.IsVerified {
+		return errors.New("user already verified")
+	}
+
 	_, err = us.otpEmailService.SendOTPByEmail(ctx, user.Email)
 	if err != nil {
 		return err
