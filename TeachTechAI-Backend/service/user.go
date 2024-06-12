@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"teach-tech-ai/dto"
 	"teach-tech-ai/entity"
 	"teach-tech-ai/helpers"
@@ -22,10 +23,12 @@ type UserService interface {
 	FindUserByEmail(ctx context.Context, email string) (entity.User, error)
 	Verify(ctx context.Context, email string, password string) (bool, error)
 	CheckUser(ctx context.Context, email string) (bool, error)
+	UpdateUser(ctx context.Context, userDTO dto.UserUpdateInfoDTO) error
+	ChangePassword(ctx context.Context, userID uuid.UUID, passwordDTO dto.UserChangePassword) error
+	ForgotPassword(ctx context.Context, forgotPasswordDTO dto.ForgotPassword) error
+	MeUser(ctx context.Context, userID uuid.UUID) (entity.User, error)
 	FindUserRoleByRoleID(roleID uuid.UUID) (string, error)
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
-	UpdateUser(ctx context.Context, userDTO dto.UserUpdateInfoDTO) error
-	MeUser(ctx context.Context, userID uuid.UUID) (entity.User, error)
 	StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error
 	UploadUserProfilePicture(ctx context.Context, userID uuid.UUID, localFilePath string) error
 	GetUserProfilePicture(ctx context.Context, userID uuid.UUID) (string, error)
@@ -162,6 +165,63 @@ func (us *userService) UpdateUser(ctx context.Context, userDTO dto.UserUpdateInf
 		return err
 	}
 	return us.userRepository.UpdateUser(ctx, user)
+}
+
+func (us *userService) ChangePassword(ctx context.Context, userID uuid.UUID, passwordDTO dto.UserChangePassword) error {	
+	user, err := us.userRepository.FindUserByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	_, err = helpers.CheckPassword(user.Password, []byte(passwordDTO.OldPassword))
+	if err != nil {
+		return errors.New("password lama salah")
+	}
+
+	hashedNewPassword, err := helpers.HashPassword(passwordDTO.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	_, err = helpers.CheckPassword(user.Password, []byte(passwordDTO.NewPassword))
+	if err != nil {
+		user.Password = string(hashedNewPassword)
+		return us.userRepository.UpdateUser(ctx, user)
+	}
+	return errors.New("password baru tidak boleh sama dengan password lama")
+}
+
+func (us *userService) ForgotPassword(ctx context.Context, forgotPasswordDTO dto.ForgotPassword) error {
+	user, err := us.userRepository.FindUserByEmail(ctx, forgotPasswordDTO.Email)
+	if err != nil {
+		return err
+	}
+
+	if !user.IsVerified {
+		return errors.New("user not verified")
+	}
+
+	newPassword := helpers.GeneratePassword(16, true, true)
+	hashedPassword, err := helpers.HashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+
+	user.Password = string(hashedPassword)
+	err = us.userRepository.UpdateUser(ctx, user)
+	if err != nil {
+		return err
+	}
+
+	subject := "TeachTechAI OTP Verification"
+	body := fmt.Sprintf("Your new password: %s", newPassword)
+
+	err = utils.SendMail(forgotPasswordDTO.Email, subject, body)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (us *userService) MeUser(ctx context.Context, userID uuid.UUID) (entity.User, error) {

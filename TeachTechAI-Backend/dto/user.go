@@ -43,6 +43,15 @@ type UploadFileDTO struct {
 	File *multipart.FileHeader `form:"file" binding:"required"`
 }
 
+type UserChangePassword struct {
+	OldPassword string 		`json:"old_password" form:"old_password" binding:"required"`
+	NewPassword string 		`json:"new_password" form:"new_password" binding:"required"`
+}
+
+type ForgotPassword struct {
+	Email string `json:"email" form:"email" binding:"required"`
+}
+
 type UserLoginDTO struct {
 	Email    string `json:"email" form:"email" binding:"email"`
 	Password string `json:"password" form:"password" binding:"required"`

@@ -22,6 +22,8 @@ type UserController interface {
 	RefreshUser(ctx *gin.Context)
 	GetAllUser(ctx *gin.Context)
 	UpdateUserInfo(ctx *gin.Context)
+	ChangePassword(ctx *gin.Context)
+	ForgotPassword(ctx *gin.Context)
 	UploadUserProfilePicture(ctx *gin.Context)
 	GetUserProfilePicture(ctx *gin.Context)
 	DeleteUserProfilePicture(ctx *gin.Context)
@@ -276,6 +278,54 @@ func (uc *userController) UpdateUserInfo(ctx *gin.Context) {
 		return
 	}
 	res := common.BuildResponse(true, "Berhasil Mengupdate User", common.EmptyObj{})
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (uc *userController) ChangePassword(ctx *gin.Context) {
+	var user dto.UserChangePassword
+	err := ctx.ShouldBind(&user)
+	if err != nil {
+		res := common.BuildErrorResponse("Gagal Mengupdate Password", err.Error(), common.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	token := ctx.MustGet("token").(string)
+	userID, err := uc.jwtService.GetUserIDByToken(token)
+	if err != nil {
+		response := common.BuildErrorResponse("Gagal Memproses Request", "Token Tidak Valid", nil)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
+		return
+	}
+
+	err = uc.userService.ChangePassword(ctx.Request.Context(), userID, user)
+	if err != nil {
+		res := common.BuildErrorResponse("Gagal Mengupdate Password", err.Error(), common.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := common.BuildResponse(true, "Berhasil Mengupdate Password", common.EmptyObj{})
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (uc *userController) ForgotPassword(ctx *gin.Context) {
+	var forgotPassword dto.ForgotPassword
+	err := ctx.ShouldBind(&forgotPassword)
+	if err != nil {
+		res := common.BuildErrorResponse("Gagal Reset Password", err.Error(), common.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	err = uc.userService.ForgotPassword(ctx.Request.Context(), forgotPassword)
+	if err != nil {
+		res := common.BuildErrorResponse("Gagal Reset Password", err.Error(), common.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := common.BuildResponse(true, "Berhasil Mengirim Password Baru", common.EmptyObj{})
 	ctx.JSON(http.StatusOK, res)
 }
 
