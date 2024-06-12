@@ -33,6 +33,11 @@ type Request struct {
     EarlyStopping      bool                   `json:"early_stopping"`
 }
 
+type Message struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
 type Response struct {
 	ID                string   `json:"id"`
 	Object            string   `json:"object"`
@@ -50,11 +55,6 @@ type Choice struct {
 	FinishReason string   `json:"finish_reason"`
 }
 
-type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
 type LogProbs struct {
 	Tokens        []string  `json:"tokens"`
 	TokenLogProbs []float64 `json:"token_logprobs"`
@@ -67,6 +67,22 @@ type Usage struct {
 	CompletionTokens int `json:"completion_tokens"`
 	TotalTokens      int `json:"total_tokens"`
 }
+
+// type StreamResponse struct {
+//     ID                string         `json:"id"`
+// 	Object            string         `json:"object"`
+// 	Created           int64          `json:"created"`
+// 	Model             string         `json:"model"`
+// 	SystemFingerprint string         `json:"system_fingerprint"`
+// 	Choices           []StreamChoice `json:"choices"`
+// }
+
+// type StreamChoice struct {
+// 	Index           int       `json:"index"`
+// 	Message         Message   `json:"delta"`
+//     Logprobs        *LogProbs `json:"logprobs"`
+//     FinishReason    string   `json:"finish_reason"`
+// }
 
 func PromptAI(inputs string, model string) (*Response, error) {
     requestBody := Request{
@@ -122,3 +138,128 @@ func PromptAI(inputs string, model string) (*Response, error) {
 
     return &response, nil
 }
+
+// func PromptAIStream(ctx context.Context, inputs string, model string, responseChan chan string) (string, int, string, error) {
+// 	requestBody := Request{
+// 		FrequencyPenalty: 1,
+// 		MaxTokens:        2048,
+// 		Messages: []map[string]string{
+// 			{
+// 				"role":    "system",
+// 				"content": SYSTEM_CONTENT,
+// 			},
+// 			{
+// 				"role":    "user",
+// 				"content": inputs,
+// 			},
+// 		},
+// 		Model:             model,
+// 		Stream:            true,
+// 		RepetitionPenalty: 1.2,
+// 		Temperature:       0.6,
+// 		DoSample:          true,
+// 		TopP:              0.95,
+// 		Watermark:         false,
+// 		LengthPenalty:     1,
+// 		EarlyStopping:     true,
+// 	}
+
+// 	var (
+// 		completeMessage string
+// 		numOfTokens     int
+// 		finishReason    string
+// 	)
+
+// 	body, err := json.Marshal(requestBody)
+// 	if err != nil {
+// 		return completeMessage, numOfTokens, finishReason, fmt.Errorf("failed to marshal request body: %v", err)
+// 	}
+
+// 	req, err := http.NewRequest("POST", ENDPOINT, bytes.NewBuffer(body))
+// 	if err != nil {
+// 		return completeMessage, numOfTokens, finishReason, fmt.Errorf("failed to create request: %v", err)
+// 	}
+
+// 	req.Header.Set("Content-Type", "application/json")
+// 	client := &http.Client{
+// 		Timeout: 0, // No timeout for streaming requests
+// 	}
+
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		return completeMessage, numOfTokens, finishReason, fmt.Errorf("failed to send request: %v", err)
+// 	}
+// 	defer resp.Body.Close()
+
+// 	// Check if the response is of type text/event-stream
+// 	contentType := resp.Header.Get("Content-Type")
+// 	if contentType != "text/event-stream" {
+// 		return completeMessage, numOfTokens, finishReason, fmt.Errorf("unexpected Content-Type: %s", contentType)
+// 	}
+
+// 	// Use bufio.Reader to read the response line by line
+// 	reader := bufio.NewReader(resp.Body)
+
+// 	for {
+// 		line, err := reader.ReadBytes('\n')
+// 		if err != nil && err != io.EOF {
+// 			return completeMessage, numOfTokens, finishReason, fmt.Errorf("failed to read response: %v", err)
+// 		}
+
+// 		// Check for Heartbeat or comment lines
+// 		if bytes.HasPrefix(line, []byte(":")) {
+// 			continue
+// 		}
+
+// 		// Trim newline and carriage return characters
+// 		line = bytes.TrimSpace(line)
+
+// 		// Check for empty lines
+// 		if len(line) == 0 {
+// 			continue
+// 		}
+
+// 		// Process the SSE message
+// 		fields := bytes.SplitN(line, []byte(":"), 2)
+// 		if len(fields) < 2 {
+// 			return completeMessage, numOfTokens, finishReason, fmt.Errorf("malformed SSE message: %s", string(line))
+// 		}
+
+// 		event := string(fields[0])
+// 		data := fields[1]
+
+// 		switch event {
+// 		case "data":
+// 			// Process the data payload
+// 			var chunk Response
+// 			if err := json.Unmarshal(data, &chunk); err != nil {
+// 				return completeMessage, numOfTokens, finishReason, fmt.Errorf("failed to decode JSON response: %v", err)
+// 			}
+
+// 			// Send each chunk's content to the response channel
+// 			content := chunk.Choices[0].Message.Content
+// 			responseChan <- content
+
+// 			// Build complete message
+// 			completeMessage += content
+
+// 			// Update num of tokens
+// 			numOfTokens += chunk.Usage.CompletionTokens
+
+// 			// Update finish reason
+// 			if chunk.Choices[0].FinishReason != "" {
+// 				finishReason = chunk.Choices[0].FinishReason
+// 				fmt.Println(completeMessage, numOfTokens, finishReason)
+// 				return completeMessage, numOfTokens, finishReason, nil
+// 			}
+
+// 		case "ping":
+// 			// Ignore ping messages
+// 			continue
+
+// 		default:
+// 			// Unknown event type
+// 			return completeMessage, numOfTokens, finishReason, fmt.Errorf("unknown event type: %s", event)
+// 		}
+// 	}
+// }

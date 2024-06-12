@@ -12,6 +12,7 @@ import (
 
 type MessageController interface {
 	CreateMessage(ctx *gin.Context)
+	// CreateMessageStream(ctx *gin.Context)
 	GetMessagesFromConversation(ctx *gin.Context)
 }
 
@@ -78,6 +79,75 @@ func (mc *messageController) CreateMessage(ctx *gin.Context) {
 	res := common.BuildResponse(true, "Berhasil Membuat Pesan", message)
 	ctx.JSON(http.StatusCreated, res)
 }
+
+// func (mc *messageController) CreateMessageStream(ctx *gin.Context) {
+// 	var msg dto.MessageRequestDTO
+// 	err := ctx.ShouldBind(&msg)
+// 	if err != nil {
+// 		response := common.BuildErrorResponse("Gagal Membuat Pesan", err.Error(), common.EmptyObj{})
+// 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+// 		return
+// 	}
+// 	token := ctx.MustGet("token").(string)
+// 	userID, err := mc.jwtService.GetUserIDByToken(token)
+// 	if err != nil {
+// 		response := common.BuildErrorResponse("Gagal Memproses Request", "Token Tidak Valid", nil)
+// 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
+// 		return
+// 	}
+
+// 	if msg.ConversationID == "" {
+// 		conversation, err := mc.conversationService.CreateConversation(userID, msg.Topic)
+// 		if err != nil {
+// 			response := common.BuildErrorResponse("Gagal Membuat Pesan", err.Error(), common.EmptyObj{})
+// 			ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+// 			return
+// 		}
+// 		msg.ConversationID = conversation.ID.String()
+// 	}
+
+// 	convoID, err := uuid.Parse(msg.ConversationID)
+// 	if err != nil {
+// 		response := common.BuildErrorResponse("Gagal Membuat Pesan", "Invalid conversation ID", common.EmptyObj{})
+// 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+// 		return
+// 	}
+
+// 	if valid, err := mc.conversationService.ValidateUserConversation(userID, convoID); !valid || err != nil {
+// 		response := common.BuildErrorResponse("Gagal Membuat Pesan", "Anda Tidak Memiliki Akses", common.EmptyObj{})
+// 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
+// 		return
+// 	}
+
+// 	// Set headers for streaming
+// 	ctx.Writer.Header().Set("Content-Type", "application/json")
+// 	ctx.Writer.Header().Set("Transfer-Encoding", "chunked")
+
+// 	// Create a context with a cancel function
+// 	streamCtx, cancel := context.WithCancel(ctx.Request.Context())
+// 	defer cancel()
+
+// 	// Call service layer to create message and stream response
+// 	responseChan, err := mc.messageService.CreateMessageStream(streamCtx, msg)
+// 	if err != nil {
+// 		response := common.BuildErrorResponse("Gagal Membuat Pesan", err.Error(), common.EmptyObj{})
+// 		ctx.JSON(http.StatusInternalServerError, response)
+// 		return
+// 	}
+
+// 	// Stream response to client
+// 	flusher, ok := ctx.Writer.(http.Flusher)
+// 	if !ok {
+// 		response := common.BuildErrorResponse("Streaming not supported", "Failed to stream response", common.EmptyObj{})
+// 		ctx.JSON(http.StatusInternalServerError, response)
+// 		return
+// 	}
+
+// 	for content := range responseChan {
+// 		fmt.Fprintf(ctx.Writer, "%s", content)
+// 		flusher.Flush()
+// 	}
+// }
 
 func (mc *messageController) GetMessagesFromConversation(ctx *gin.Context) {
 	conversationID := ctx.Param("id")

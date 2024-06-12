@@ -13,6 +13,7 @@ import (
 
 type MessageService interface {
 	CreateMessage(ctx context.Context, msgDTO dto.MessageRequestDTO) (dto.MessageResponseDTO, error)
+	// CreateMessageStream(ctx context.Context, msgDTO dto.MessageRequestDTO) (chan string, error)
 	GetMessagesFromConversation(ctx context.Context, msgDTO dto.GetMessagesFromConversationDTO) (dto.GetMessagesFromConversationResponseDTO, error)
 }
 
@@ -72,6 +73,55 @@ func (ms *messageService) CreateMessage(ctx context.Context, msgDTO dto.MessageR
 
 	return res, nil
 }
+
+// func (ms *messageService) CreateMessageStream(ctx context.Context, msgDTO dto.MessageRequestDTO) (chan string, error) {
+// 	responseChan := make(chan string)
+
+// 	var (
+// 		completeMessage string
+// 		numOfTokens     int
+// 		finishReason    string
+// 	)
+
+// 	// Call utility function to start streaming AI responses
+// 	go func() {
+// 		defer close(responseChan)
+
+// 		msgContent, tokens, reason, err := utils.PromptAIStream(ctx, msgDTO.Request, msgDTO.AIModelName, responseChan)
+// 		if err != nil {
+// 			log.Println(err)
+// 			return
+// 		}
+
+// 		completeMessage = msgContent
+// 		numOfTokens = tokens
+// 		finishReason = reason
+
+// 		log.Println(completeMessage)
+// 		log.Println(numOfTokens)
+// 		log.Println(finishReason)
+// 	}()
+
+// 	// Store Message to DB (if needed)
+
+// 	// This part can be removed if you're streaming directly to the client
+// 	// Create message entity
+// 	// message := entity.Message{
+// 	// 	Request:        msgDTO.Request,
+// 	// 	Response:       completeMessage,
+// 	// 	Datetime:       time.Now(),
+// 	// 	NumOfTokens:    numOfTokens,
+// 	// 	FinishReason:   finishReason,
+// 	// }
+
+// 	// Store Message to DB
+// 	// _, err := ms.messageRepository.StoreMessage(message)
+// 	// if err != nil {
+// 	// 	return nil, err
+// 	// }
+
+// 	return responseChan, nil
+// }
 
 func (ms *messageService) GetMessagesFromConversation(ctx context.Context, msgDTO dto.GetMessagesFromConversationDTO) (dto.GetMessagesFromConversationResponseDTO, error) {
 	convID, err := uuid.Parse(msgDTO.ConversationID)
