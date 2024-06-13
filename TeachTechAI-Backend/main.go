@@ -36,11 +36,11 @@ func main() {
 		otpEmailService     service.OTPEmailService     = service.NewOTPEmailService(otpEmailRepository)
 		otpTwilioService    service.OTPTwilioService    = service.NewOTPTwilioService()
 		jwtService          service.JWTService          = service.NewJWTService(userRepository, roleRepository)
-		userService         service.UserService         = service.NewUserService(userRepository, roleRepository, otpEmailService)
+		userService         service.UserService         = service.NewUserService(userRepository, roleRepository, otpEmailService, jwtService)
 		conversationService service.ConversationService = service.NewConversationService(conversationRepository)
 		messageService      service.MessageService      = service.NewMessageService(messageRepository, conversationRepository, aimodelRepository)
 
-		oauthController        controller.OAuthController        = controller.NewOAuthController(oauthService)
+		oauthController        controller.OAuthController        = controller.NewOAuthController(oauthService, userService)
 		otpTwilioController    controller.OTPTwilioController    = controller.NewOTPTwilioController(otpTwilioService)
 		userController         controller.UserController         = controller.NewUserController(userService, jwtService)
 		messageController      controller.MessageController      = controller.NewMessageController(messageService, conversationService, jwtService)

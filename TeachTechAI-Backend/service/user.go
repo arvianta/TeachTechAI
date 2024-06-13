@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"teach-tech-ai/dto"
 	"teach-tech-ai/entity"
@@ -12,13 +11,15 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/markbates/goth"
 	"github.com/mashingan/smapping"
 )
 
 type UserService interface {
 	RegisterUser(ctx context.Context, userDTO dto.UserCreateDTO) (entity.User, error)
-	SendUserOTPByEmail(ctx context.Context, userVerifyDTO dto.SendUserOTPByEmail) error
+	SendUserOTPByEmail(ctx context.Context, email string) error
 	VerifyUserOTPByEmail(ctx context.Context, userVerifyDTO dto.VerifyUserOTPByEmail) error
+	LoginRegisterWithOAuth(ctx context.Context, user goth.User) (dto.UserLoginResponseDTO, error)
 	GetAllUser(ctx context.Context) ([]entity.User, error)
 	FindUserByEmail(ctx context.Context, email string) (entity.User, error)
 	Verify(ctx context.Context, email string, password string) (bool, error)
@@ -39,17 +40,33 @@ type userService struct {
 	userRepository  repository.UserRepository
 	roleRepository  repository.RoleRepository
 	otpEmailService OTPEmailService
+	jwtService      JWTService
 }
 
-func NewUserService(ur repository.UserRepository, rr repository.RoleRepository, os OTPEmailService) UserService {
+func NewUserService(ur repository.UserRepository, rr repository.RoleRepository, os OTPEmailService, jwts JWTService) UserService {
 	return &userService{
 		userRepository:  ur,
 		roleRepository:  rr,
 		otpEmailService: os,
+		jwtService:      jwts,
 	}
 }
 
 func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateDTO) (entity.User, error) {
+	checkUser, err := us.CheckUser(ctx, userDTO.Email)
+	if checkUser {
+		if err == dto.ErrAccountAlreadyVerified {
+			return entity.User{}, err
+		}
+		if err == dto.ErrAccountNotVerified {
+			_, err := us.otpEmailService.SendOTPByEmail(ctx, userDTO.Email)
+			if err != nil {
+				return entity.User{}, err
+			}
+			return entity.User{}, dto.ErrAccountNotVerifiedWhenRegister
+		}
+	}
+
 	roleID, err := us.roleRepository.FindRoleIDByName(ctx, "USER")
 	if err != nil {
 		return entity.User{}, err
@@ -76,14 +93,14 @@ func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateD
 	return createdUser, nil
 }
 
-func (us *userService) SendUserOTPByEmail(ctx context.Context, userVerifyDTO dto.SendUserOTPByEmail) error {
-	user, err := us.userRepository.FindUserByEmail(ctx, userVerifyDTO.Email)
+func (us *userService) SendUserOTPByEmail(ctx context.Context, email string) error {
+	user, err := us.userRepository.FindUserByEmail(ctx, email)
 	if err != nil {
 		return err
 	}
 
 	if user.IsVerified {
-		return errors.New("user already verified")
+		return dto.ErrAccountAlreadyVerified
 	}
 
 	_, err = us.otpEmailService.SendOTPByEmail(ctx, user.Email)
@@ -101,7 +118,7 @@ func (us *userService) VerifyUserOTPByEmail(ctx context.Context, userVerifyDTO d
 	}
 
 	if user.IsVerified {
-		return errors.New("user already verified")
+		return dto.ErrAccountAlreadyVerified
 	}
 
 	err = us.otpEmailService.VerifyOTPByEmail(ctx, user.Email, userVerifyDTO.OTP)
@@ -119,6 +136,69 @@ func (us *userService) VerifyUserOTPByEmail(ctx context.Context, userVerifyDTO d
 	return nil
 }
 
+func (us *userService) LoginRegisterWithOAuth(ctx context.Context, userGoth goth.User) (dto.UserLoginResponseDTO, error) {
+	userData, err := us.userRepository.FindUserByEmail(ctx, userGoth.Email)
+	if err != nil && err != dto.ErrUserNotFoundGorm {
+		return dto.UserLoginResponseDTO{}, err
+	} else if err == dto.ErrUserNotFoundGorm {
+		// Register the user if not found
+		roleID, err := us.roleRepository.FindRoleIDByName(ctx, "USER")
+		if err != nil {
+			return dto.UserLoginResponseDTO{}, err
+		}
+
+		userData = entity.User{
+			Email:      userGoth.Email,
+			GoogleID:   userGoth.UserID,
+			RoleID:     roleID,
+			IsVerified: true,
+		}
+
+		_, err = us.userRepository.RegisterUser(ctx, userData)
+		if err != nil {
+			return dto.UserLoginResponseDTO{}, err
+		}
+	} else {
+		if userData.GoogleID == "" || !userData.IsVerified {
+			userData.GoogleID = userGoth.UserID
+			userData.IsVerified = true
+			err = us.userRepository.UpdateUser(ctx, userData)
+			if err != nil {
+				return dto.UserLoginResponseDTO{}, err
+			}
+		}
+	}
+
+	// Handle Login
+	roleID, err := uuid.Parse(userData.RoleID)
+	if err != nil {
+		return dto.UserLoginResponseDTO{}, err
+	}
+
+	role, err := us.roleRepository.FindRoleNameByID(roleID)
+	if err != nil {
+		return dto.UserLoginResponseDTO{}, err
+	}
+
+	sessionToken, refreshToken, atx, rtx, err := us.jwtService.GenerateToken(userData.ID, role)
+	if err != nil {
+		return dto.UserLoginResponseDTO{}, err
+	}
+
+	userResponse := dto.UserLoginResponseDTO{
+		SessionToken: sessionToken,
+		RefreshToken: refreshToken,
+		Role:         role,
+	}
+
+	err = us.StoreUserToken(ctx, userData.ID, sessionToken, refreshToken, atx, rtx)
+	if err != nil {
+		return dto.UserLoginResponseDTO{}, err
+	}
+
+	return userResponse, nil
+}
+
 func (us *userService) GetAllUser(ctx context.Context) ([]entity.User, error) {
 	return us.userRepository.GetAllUser(ctx)
 }
@@ -133,11 +213,11 @@ func (us *userService) Verify(ctx context.Context, email string, password string
 		return false, err
 	}
 	if !res.IsVerified {
-		return false, errors.New("user belum terverifikasi")
+		return false, dto.ErrAccountNotVerified
 	}
 	CheckPassword, err := helpers.CheckPassword(res.Password, []byte(password))
 	if err != nil {
-		return false, errors.New("email atau password salah")
+		return false, dto.ErrEmailOrPassword
 	}
 	if res.Email == email && CheckPassword {
 		return true, nil
@@ -151,10 +231,12 @@ func (us *userService) CheckUser(ctx context.Context, email string) (bool, error
 		return false, err
 	}
 
-	if result.Email == "" {
-		return false, nil
+	if result.IsVerified {
+		return true, dto.ErrAccountAlreadyVerified
+	} else if !result.IsVerified {
+		return true, dto.ErrAccountNotVerified
 	}
-	return true, dto.ErrEmailAlreadyExists
+	return false, nil
 }
 
 func (us *userService) UpdateUser(ctx context.Context, userDTO dto.UserUpdateInfoDTO) error {
@@ -174,7 +256,7 @@ func (us *userService) ChangePassword(ctx context.Context, userID uuid.UUID, pas
 
 	_, err = helpers.CheckPassword(user.Password, []byte(passwordDTO.OldPassword))
 	if err != nil {
-		return errors.New("password lama salah")
+		return dto.ErrInvalidOldPassword
 	}
 
 	hashedNewPassword, err := helpers.HashPassword(passwordDTO.NewPassword)
@@ -183,11 +265,12 @@ func (us *userService) ChangePassword(ctx context.Context, userID uuid.UUID, pas
 	}
 
 	_, err = helpers.CheckPassword(user.Password, []byte(passwordDTO.NewPassword))
-	if err != nil {
-		user.Password = string(hashedNewPassword)
-		return us.userRepository.UpdateUser(ctx, user)
+	if err == nil {
+		return dto.ErrPasswordSame
 	}
-	return errors.New("password baru tidak boleh sama dengan password lama")
+
+	user.Password = string(hashedNewPassword)
+	return us.userRepository.UpdateUser(ctx, user)
 }
 
 func (us *userService) ForgotPassword(ctx context.Context, forgotPasswordDTO dto.ForgotPassword) error {
@@ -197,7 +280,7 @@ func (us *userService) ForgotPassword(ctx context.Context, forgotPasswordDTO dto
 	}
 
 	if !user.IsVerified {
-		return errors.New("user not verified")
+		return dto.ErrAccountNotVerified
 	}
 
 	newPassword := helpers.GeneratePassword(16, true, true)
@@ -276,7 +359,7 @@ func (us *userService) GetUserProfilePicture(ctx context.Context, userID uuid.UU
 	localFilePath := "/tmp/" + user.ProfilePicture
 
 	if user.ProfilePicture == "" {
-		return "", errors.New("profile picture not found")
+		return "", dto.ErrProfilePictureNotFound
 	}
 
 	err = utils.DownloadFileFromCloud(ctx, user.ProfilePicture, localFilePath)

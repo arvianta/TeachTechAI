@@ -6,21 +6,21 @@ import (
 )
 
 const (
-	// Failed
-	MESSAGE_FAILED_CREATING_MESSAGE = "failed to create message"
-	MESSAGE_FAILED_GET_MESSAGE      = "failed to fetch message"
-	MESSAGE_FAILED_GET_CONVO        = "failed to fetch conversation"
-	MESSAGE_FAILED_DELETE_CONVO     = "failed to delete conversation"
+	// Gagal
+	MESSAGE_FAILED_CREATING_MESSAGE = "gagal membuat message"
+	MESSAGE_FAILED_GET_MESSAGE      = "gagal mengambil message"
+	MESSAGE_FAILED_GET_CONVO        = "gagal mengambil conversation"
+	MESSAGE_FAILED_DELETE_CONVO     = "gagal menghapus conversation"
 
-	// Success
-	MESSAGE_SUCCESS_CREATE_MESSAGE = "message created successfully"
-	MESSAGE_SUCCESS_GET_MESSAGE    = "message fetched successfully"
-	MESSAGE_SUCCESS_GET_CONVO      = "conversation fetched successfully"
-	MESSAGE_SUCCESS_DELETE_CONVO   = "conversation deleted successfuly"
+	// Berhasil
+	MESSAGE_SUCCESS_CREATE_MESSAGE = "message berhasil dibuat"
+	MESSAGE_SUCCESS_GET_MESSAGE    = "message berhasil diambil"
+	MESSAGE_SUCCESS_GET_CONVO      = "conversation berhasil diambil"
+	MESSAGE_SUCCESS_DELETE_CONVO   = "conversation berhasil dihapus"
 )
 
 var (
-	ErrValidateUserConversation = errors.New("user unauthorized to access this conversation")
+	ErrValidateUserConversation = errors.New("pengguna tidak diizinkan untuk mengakses conversation ini")
 )
 
 type (

@@ -6,62 +6,68 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 const (
 	// Failed
-	MESSAGE_FAILED_REGISTER_USER           = "failed to create user"
-	MESSAGE_FAILED_GET_USER_TOKEN          = "failed to get user token"
-	MESSAGE_FAILED_GET_USER                = "failed to get user"
-	MESSAGE_FAILED_LOGIN                   = "login failed"
-	MESSAGE_FAILED_WRONG_EMAIL_OR_PASSWORD = "wrong email or password"
-	MESSAGE_FAILED_UPDATE_USER             = "failed to update user"
-	MESSAGE_FAILED_CHANGE_PASSWORD         = "failed to change password"
-	MESSAGE_FAILED_RESET_PASSWORD          = "failed to reset password"
-	MESSAGE_FAILED_DELETE_USER             = "failed to delete user"
-	MESSAGE_FAILED_PROCESSING_REQUEST      = "failed processing request"
-	MESSAGE_FAILED_DENIED_ACCESS           = "access denied"
-	MESSAGE_FAILED_SEND_OTP_EMAIL          = "failed to send otp verification to email"
-	MESSAGE_FAILED_VERIFY_EMAIL            = "failed to verify email"
-	MESSAGE_FAILED_REFRESHING_TOKEN        = "failed to refresh token"
-	MESSAGE_FAILED_LOGOUT                  = "failed to log out"
-	MESSAGE_FAILED_UPLOAD_PROFILE_PICTURE  = "failed to upload picture"
-	MESSAGE_FAILED_GET_PROFILE_PICTURE     = "failed to get profile picture"
-	MESSAGE_FAILED_DELETE_PROFILE_PICTURE  = "failed to delete profile picture"
+	MESSAGE_FAILED_REGISTER_USER           = "gagal membuat pengguna"
+	MESSAGE_FAILED_GET_USER_TOKEN          = "gagal mendapatkan token pengguna"
+	MESSAGE_FAILED_GET_USER                = "gagal mendapatkan pengguna"
+	MESSAGE_FAILED_LOGIN                   = "login gagal"
+	MESSAGE_FAILED_WRONG_EMAIL_OR_PASSWORD = "email atau password salah"
+	MESSAGE_FAILED_UPDATE_USER             = "gagal memperbarui pengguna"
+	MESSAGE_FAILED_CHANGE_PASSWORD         = "gagal mengubah password"
+	MESSAGE_FAILED_RESET_PASSWORD          = "gagal mereset password"
+	MESSAGE_FAILED_DELETE_USER             = "gagal menghapus pengguna"
+	MESSAGE_FAILED_PROCESSING_REQUEST      = "gagal memproses permintaan"
+	MESSAGE_FAILED_DENIED_ACCESS           = "akses ditolak"
+	MESSAGE_FAILED_SEND_OTP_EMAIL          = "gagal mengirim verifikasi otp ke email"
+	MESSAGE_FAILED_VERIFY_EMAIL            = "gagal memverifikasi email"
+	MESSAGE_FAILED_REFRESHING_TOKEN        = "gagal memperbarui token"
+	MESSAGE_FAILED_LOGOUT                  = "gagal logout"
+	MESSAGE_FAILED_UPLOAD_PROFILE_PICTURE  = "gagal mengunggah gambar"
+	MESSAGE_FAILED_GET_PROFILE_PICTURE     = "gagal mendapatkan gambar profil"
+	MESSAGE_FAILED_DELETE_PROFILE_PICTURE  = "gagal menghapus gambar profil"
 
 	// Success
-	MESSAGE_SUCCESS_REGISTER_USER          = "creating user success"
-	MESSAGE_SUCCESS_GET_USER               = "getting user success"
-	MESSAGE_SUCCESS_LOGIN                  = "login success"
-	MESSAGE_SUCCESS_UPDATE_USER            = "updating user success"
-	MESSAGE_SUCCESS_CHANGE_PASSWORD        = "change password success"
-	MESSAGE_SUCCESS_RESET_PASSWORD         = "reset password success"
-	MESSAGE_SUCCESS_DELETE_USER            = "deleting user success"
-	MESSAGE_SEND_OTP_EMAIL_SUCCESS         = "sending otp verification to email success"
-	MESSAGE_SUCCESS_VERIFY_EMAIL           = "verify email success"
-	MESSAGE_SUCCESS_REFRESH_TOKEN          = "refresh token success"
-	MESSAGE_SUCCESS_LOGOUT                 = "logout success"
-	MESSAGE_SUCCESS_UPLOAD_PROFILE_PICTURE = "upload picture success"
-	MESSAGE_SUCCESS_DELETE_PROFILE_PICTURE = "deleting profile picture success"
+	MESSAGE_SUCCESS_REGISTER_USER          = "membuat pengguna berhasil"
+	MESSAGE_SUCCESS_GET_USER               = "mendapatkan pengguna berhasil"
+	MESSAGE_SUCCESS_LOGIN                  = "login berhasil"
+	MESSAGE_SUCCESS_UPDATE_USER            = "memperbarui pengguna berhasil"
+	MESSAGE_SUCCESS_CHANGE_PASSWORD        = "mengubah password berhasil"
+	MESSAGE_SUCCESS_RESET_PASSWORD         = "mereset password berhasil"
+	MESSAGE_SUCCESS_DELETE_USER            = "menghapus pengguna berhasil"
+	MESSAGE_SEND_OTP_EMAIL_SUCCESS         = "mengirim verifikasi otp ke email berhasil"
+	MESSAGE_SUCCESS_VERIFY_EMAIL           = "memverifikasi email berhasil"
+	MESSAGE_SUCCESS_REFRESH_TOKEN          = "memperbarui token berhasil"
+	MESSAGE_SUCCESS_LOGOUT                 = "logout berhasil"
+	MESSAGE_SUCCESS_UPLOAD_PROFILE_PICTURE = "mengunggah foto profil berhasil"
+	MESSAGE_SUCCESS_DELETE_PROFILE_PICTURE = "menghapus foto profil berhasil"
 )
 
 var (
-	ErrCreateUser             = errors.New("failed to create user")
-	ErrGetAllUser             = errors.New("failed to get all user")
-	ErrGetUserById            = errors.New("failed to get user by id")
-	ErrGetUserByEmail         = errors.New("failed to get user by email")
-	ErrEmailAlreadyExists     = errors.New("email already exist")
-	ErrUpdateUser             = errors.New("failed to update user")
-	ErrUserNotAdmin           = errors.New("user not admin")
-	ErrUserNotFound           = errors.New("user not found")
-	ErrEmailNotFound          = errors.New("email not found")
-	ErrDeleteUser             = errors.New("failed to delete user")
-	ErrPasswordNotMatch       = errors.New("password not match")
-	ErrEmailOrPassword        = errors.New("wrong email or password")
-	ErrAccountNotVerified     = errors.New("account not verified")
-	ErrTokenInvalid           = errors.New("token invalid")
-	ErrTokenExpired           = errors.New("token expired")
-	ErrAccountAlreadyVerified = errors.New("account already verified")
+	ErrCreateUser                     = errors.New("gagal membuat pengguna")
+	ErrGetAllUser                     = errors.New("gagal mendapatkan semua pengguna")
+	ErrGetUserById                    = errors.New("gagal mendapatkan pengguna berdasarkan ID")
+	ErrGetUserByEmail                 = errors.New("gagal mendapatkan pengguna berdasarkan email")
+	ErrEmailAlreadyExists             = errors.New("email sudah ada")
+	ErrUpdateUser                     = errors.New("gagal memperbarui pengguna")
+	ErrUserNotAdmin                   = errors.New("pengguna bukan admin")
+	ErrUserNotFound                   = errors.New("pengguna tidak ditemukan")
+	ErrEmailNotFound                  = errors.New("email tidak ditemukan")
+	ErrDeleteUser                     = errors.New("gagal menghapus pengguna")
+	ErrPasswordNotMatch               = errors.New("password tidak cocok")
+	ErrPasswordSame                   = errors.New("password baru tidak boleh sama dengan password lama")
+	ErrInvalidOldPassword             = errors.New("password lama salah")
+	ErrEmailOrPassword                = errors.New("email atau password salah")
+	ErrAccountNotVerified             = errors.New("akun belum diverifikasi")
+	ErrAccountNotVerifiedWhenRegister = errors.New("akun belum diverifikasi. OTP baru telah dikirim")
+	ErrTokenInvalid                   = errors.New("token tidak valid")
+	ErrTokenExpired                   = errors.New("token kadaluarsa")
+	ErrAccountAlreadyVerified         = errors.New("akun sudah diverifikasi. silakan login")
+	ErrProfilePictureNotFound         = errors.New("foto profil tidak ditemukan")
+	ErrUserNotFoundGorm               = gorm.ErrRecordNotFound
 )
 
 type (

@@ -50,12 +50,6 @@ func (uc *userController) RegisterUser(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
-	checkUser, err := uc.userService.CheckUser(ctx.Request.Context(), user.Email)
-	if checkUser {
-		res := utils.BuildErrorResponse(dto.MESSAGE_FAILED_REGISTER_USER, err.Error(), nil)
-		ctx.JSON(http.StatusBadRequest, res)
-		return
-	}
 	_, err = uc.userService.RegisterUser(ctx.Request.Context(), user)
 	if err != nil {
 		res := utils.BuildErrorResponse(dto.MESSAGE_FAILED_REGISTER_USER, err.Error(), nil)
@@ -76,7 +70,7 @@ func (uc *userController) SendVerificationOTPByEmail(ctx *gin.Context) {
 		return
 	}
 
-	err = uc.userService.SendUserOTPByEmail(ctx.Request.Context(), userVerifyDTO)
+	err = uc.userService.SendUserOTPByEmail(ctx.Request.Context(), userVerifyDTO.Email)
 	if err != nil {
 		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_SEND_OTP_EMAIL, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)

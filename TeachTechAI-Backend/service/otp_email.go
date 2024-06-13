@@ -49,7 +49,7 @@ func (oes *otpEmailService) SendOTPByEmail(ctx context.Context, email string) (s
 			return "", err
 		}
 		if minutes > 0 || seconds > 0 {
-			return "", fmt.Errorf("please wait for %d minute(s) and %d second(s) before requesting another OTP", minutes, seconds)
+			return "", fmt.Errorf("silakan tunggu %d menit dan %d detik sebelum meminta kode otp lagi", minutes, seconds)
 		}
 	}
 
