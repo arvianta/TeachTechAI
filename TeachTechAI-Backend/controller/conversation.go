@@ -2,8 +2,9 @@ package controller
 
 import (
 	"net/http"
-	"teach-tech-ai/common"
+	"teach-tech-ai/dto"
 	"teach-tech-ai/service"
+	"teach-tech-ai/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -30,19 +31,19 @@ func (cc *conversationController) GetConversationsFromUser(ctx *gin.Context) {
 	token := ctx.MustGet("token").(string)
 	userID, err := cc.jwtService.GetUserIDByToken(token)
 	if err != nil {
-		response := common.BuildErrorResponse("Gagal Memproses Request", "Token Tidak Valid", nil)
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_PROCESSING_REQUEST, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 		return
 	}
 
-	conversations, err := cc.conversationService.GetConversationsFromUser(userID)
+	conversations, err := cc.conversationService.GetConversationsFromUser(ctx, userID)
 	if err != nil {
-		response := common.BuildErrorResponse("Gagal Mengambil Data", err.Error(), common.EmptyObj{})
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_GET_CONVO, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	response := common.BuildResponse(true, "OK", conversations)
+	response := utils.BuildSuccessResponse(dto.MESSAGE_SUCCESS_GET_CONVO, conversations)
 	ctx.JSON(http.StatusOK, response)
 }
 
@@ -50,31 +51,31 @@ func (cc *conversationController) DeleteConversation(ctx *gin.Context) {
 	token := ctx.MustGet("token").(string)
 	userID, err := cc.jwtService.GetUserIDByToken(token)
 	if err != nil {
-		response := common.BuildErrorResponse("Gagal Memproses Request", "Token Tidak Valid", nil)
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_PROCESSING_REQUEST, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 		return
 	}
 
 	convoID, err := uuid.Parse(ctx.Param("convoID"))
 	if err != nil {
-		response := common.BuildErrorResponse("Gagal Memproses Request", "ID Tidak Valid", nil)
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_DELETE_CONVO, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	if valid, err := cc.conversationService.ValidateUserConversation(userID, convoID); !valid || err != nil{
-		response := common.BuildErrorResponse("Gagal Membuat Pesan", "Anda Tidak Memiliki Akses", common.EmptyObj{})
+	if valid, err := cc.conversationService.ValidateUserConversation(ctx, userID, convoID); !valid || err != nil {
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_DELETE_CONVO, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 		return
 	}
 
-	err = cc.conversationService.DeleteConversation(convoID)
+	err = cc.conversationService.DeleteConversation(ctx, convoID)
 	if err != nil {
-		response := common.BuildErrorResponse("Gagal Menghapus Data", err.Error(), common.EmptyObj{})
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_DELETE_CONVO, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	response := common.BuildResponse(true, "Berhasil Menghapus Conversation", nil)
+	response := utils.BuildSuccessResponse(dto.MESSAGE_SUCCESS_DELETE_CONVO, utils.EmptyObj{})
 	ctx.JSON(http.StatusOK, response)
 }

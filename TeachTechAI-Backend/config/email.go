@@ -1,8 +1,6 @@
 package config
 
-import (
-	"github.com/spf13/viper"
-)
+import "teach-tech-ai/helpers"
 
 type EmailConfig struct {
 	Host         string `mapstructure:"SMTP_HOST"`
@@ -13,18 +11,12 @@ type EmailConfig struct {
 }
 
 func NewEmailConfig() (*EmailConfig, error) {
-	viper.SetConfigFile(".env")
-
-	if err := viper.ReadInConfig(); err != nil {
-		return nil, err
-	}
-
-	viper.AutomaticEnv()
-
 	var config EmailConfig
-	if err := viper.Unmarshal(&config); err != nil {
-		return nil, err
-	}
+	config.Host = helpers.MustGetenv("SMTP_HOST")
+	config.Port = helpers.MustGetenvInt("SMTP_PORT")
+	config.SenderName = helpers.MustGetenv("SMTP_SENDER_NAME")
+	config.AuthEmail = helpers.MustGetenv("SMTP_AUTH_EMAIL")
+	config.AuthPassword = helpers.MustGetenv("SMTP_AUTH_PASSWORD")
 
 	return &config, nil
 }

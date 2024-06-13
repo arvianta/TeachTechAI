@@ -18,7 +18,7 @@ func SetupDatabaseConnection() *gorm.DB {
 
 	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable TimeZone=%v", dbHost, dbUser, dbPass, dbName, dbPort, dbTimezone)
 	db, err := gorm.Open(postgres.New(postgres.Config{
-		DSN: dsn,
+		DSN:                  dsn,
 		PreferSimpleProtocol: true,
 	}), &gorm.Config{})
 	if err != nil {
@@ -26,7 +26,7 @@ func SetupDatabaseConnection() *gorm.DB {
 	}
 
 	return db
-} 
+}
 
 func CloseDatabaseConnection(db *gorm.DB) {
 	dbSQL, err := db.DB()

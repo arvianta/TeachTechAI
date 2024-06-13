@@ -18,7 +18,7 @@ type User struct {
 	ProfilePicture string    `gorm:"type:varchar(255);" json:"profile_picture"`
 	AsalInstansi   string    `gorm:"type:varchar(255);" json:"asal_instansi"`
 	DateOfBirth    time.Time `gorm:"type:date;" json:"date_of_birth"`
-	// IsVerified     bool      `gorm:"type:boolean;default:false" json:"is_verified"`
+	IsVerified     bool      `gorm:"type:boolean;default:false" json:"is_verified"`
 	SessionToken   string    `gorm:"type:varchar(255);" json:"session_token"`
 	STExpires      time.Time `gorm:"type:timestamp;" json:"st_expires"`
 	RefreshToken   string    `gorm:"type:varchar(255);" json:"refresh_token"`
@@ -32,6 +32,7 @@ type User struct {
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {
 	var err error
+	u.ID = uuid.New()
 	u.Password, err = helpers.HashPassword(u.Password)
 	if err != nil {
 		return err

@@ -12,12 +12,18 @@ func UserRoutes(router *gin.Engine, UserController controller.UserController, jw
 	userRoutes := router.Group("/api/user")
 	{
 		userRoutes.POST("/register", UserController.RegisterUser)
-		userRoutes.GET("", middleware.Authenticate(jwtService), UserController.GetAllUser)
+		userRoutes.POST("/send-otp", UserController.SendVerificationOTPByEmail)
+		userRoutes.POST("/verify-otp", UserController.VerifyEmailWithOTP)
 		userRoutes.POST("/login", UserController.LoginUser)
-		userRoutes.DELETE("/delete", middleware.Authenticate(jwtService), UserController.DeleteUser)
-		userRoutes.PUT("/update", middleware.Authenticate(jwtService), UserController.UpdateUser)
 		userRoutes.GET("/me", middleware.Authenticate(jwtService), UserController.MeUser)
 		userRoutes.POST("/refresh", UserController.RefreshUser)
+		userRoutes.PATCH("/update", middleware.Authenticate(jwtService), UserController.UpdateUserInfo)
+		userRoutes.PATCH("/change-password", middleware.Authenticate(jwtService), UserController.ChangePassword)
+		userRoutes.POST("/forgot-password", UserController.ForgotPassword)
+		userRoutes.GET("/profile-picture", middleware.Authenticate(jwtService), UserController.GetUserProfilePicture)
+		userRoutes.POST("/upload-profile-picture", middleware.Authenticate(jwtService), UserController.UploadUserProfilePicture)
+		userRoutes.POST("/delete-profile-picture", middleware.Authenticate(jwtService), UserController.DeleteUserProfilePicture)
 		userRoutes.POST("/logout", middleware.Authenticate(jwtService), UserController.Logout)
+		userRoutes.DELETE("/delete", middleware.Authenticate(jwtService), UserController.DeleteUser)
 	}
 }

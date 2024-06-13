@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 	"teach-tech-ai/entity"
 
@@ -8,7 +9,7 @@ import (
 )
 
 type AIModelRepository interface {
-	FindAIModelIDByName(name string) (string, error)
+	FindAIModelIDByName(ctx context.Context, name string) (string, error)
 }
 
 type aimodelConnection struct {
@@ -21,10 +22,10 @@ func NewAIModelRepository(db *gorm.DB) AIModelRepository {
 	}
 }
 
-func (db *aimodelConnection) FindAIModelIDByName(name string) (string, error) {
+func (db *aimodelConnection) FindAIModelIDByName(ctx context.Context, name string) (string, error) {
 	var AIModel entity.AIModel
 	var AIModelID string
-	ux := db.connection.Select("id").Where("name = ?", name).Take(&AIModel).Scan(&AIModelID)
+	ux := db.connection.WithContext(ctx).Select("id").Where("name = ?", name).Take(&AIModel).Scan(&AIModelID)
 
 	if ux.Error != nil {
 		return "", ux.Error

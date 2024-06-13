@@ -16,10 +16,12 @@ type UserRepository interface {
 	FindUserByID(ctx context.Context, userID uuid.UUID) (entity.User, error)
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
 	UpdateUser(ctx context.Context, user entity.User) error
-	StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error
+	StoreUserToken(ctx context.Context, userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error
 	FindUserRoleIDByID(userID uuid.UUID) (uuid.UUID, error)
 	InvalidateUserToken(userID uuid.UUID) error
 	GetUserSessionToken(userID uuid.UUID) (string, error)
+	UpdateProfilePicture(ctx context.Context, userID uuid.UUID, url string) error
+	ClearProfilePicture(ctx context.Context, userID uuid.UUID) error
 }
 
 type userConnection struct {
@@ -33,8 +35,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 }
 
 func (db *userConnection) RegisterUser(ctx context.Context, user entity.User) (entity.User, error) {
-	user.ID = uuid.New()
-	uc := db.connection.Create(&user)
+	uc := db.connection.WithContext(ctx).Create(&user)
 	if uc.Error != nil {
 		return entity.User{}, uc.Error
 	}
@@ -43,7 +44,7 @@ func (db *userConnection) RegisterUser(ctx context.Context, user entity.User) (e
 
 func (db *userConnection) GetAllUser(ctx context.Context) ([]entity.User, error) {
 	var listUser []entity.User
-	tx := db.connection.Find(&listUser)
+	tx := db.connection.WithContext(ctx).Find(&listUser)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -52,7 +53,7 @@ func (db *userConnection) GetAllUser(ctx context.Context) ([]entity.User, error)
 
 func (db *userConnection) FindUserByEmail(ctx context.Context, email string) (entity.User, error) {
 	var user entity.User
-	ux := db.connection.Where("email = ?", email).Take(&user)
+	ux := db.connection.WithContext(ctx).Where("email = ?", email).Take(&user)
 	if ux.Error != nil {
 		return user, ux.Error
 	}
@@ -61,7 +62,7 @@ func (db *userConnection) FindUserByEmail(ctx context.Context, email string) (en
 
 func (db *userConnection) FindUserByID(ctx context.Context, userID uuid.UUID) (entity.User, error) {
 	var user entity.User
-	ux := db.connection.Where("id = ?", userID).Take(&user)
+	ux := db.connection.WithContext(ctx).Where("id = ?", userID).Take(&user)
 	if ux.Error != nil {
 		return user, ux.Error
 	}
@@ -69,7 +70,7 @@ func (db *userConnection) FindUserByID(ctx context.Context, userID uuid.UUID) (e
 }
 
 func (db *userConnection) DeleteUser(ctx context.Context, userID uuid.UUID) error {
-	uc := db.connection.Delete(&entity.User{}, &userID)
+	uc := db.connection.WithContext(ctx).Delete(&entity.User{}, &userID)
 	if uc.Error != nil {
 		return uc.Error
 	}
@@ -77,20 +78,20 @@ func (db *userConnection) DeleteUser(ctx context.Context, userID uuid.UUID) erro
 }
 
 func (db *userConnection) UpdateUser(ctx context.Context, user entity.User) error {
-	uc := db.connection.Updates(&user)
+	uc := db.connection.WithContext(ctx).Updates(&user)
 	if uc.Error != nil {
 		return uc.Error
 	}
 	return nil
 }
 
-func (db *userConnection) StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error {
+func (db *userConnection) StoreUserToken(ctx context.Context, userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error {
 	user := entity.User{ID: userID}
-	uc := db.connection.Model(&user).Updates(map[string]interface{}{
+	uc := db.connection.WithContext(ctx).Model(&user).Updates(map[string]interface{}{
 		"session_token": sessionToken,
 		"refresh_token": refreshToken,
-		"st_expires": atx,
-		"rt_expires": rtx,
+		"st_expires":    atx,
+		"rt_expires":    rtx,
 	})
 	if uc.Error != nil {
 		return uc.Error
@@ -111,13 +112,13 @@ func (db *userConnection) FindUserRoleIDByID(userID uuid.UUID) (uuid.UUID, error
 	return roleID, nil
 }
 
-func (db *userConnection) InvalidateUserToken(userID uuid.UUID) (error) {
+func (db *userConnection) InvalidateUserToken(userID uuid.UUID) error {
 	user := entity.User{ID: userID}
 	uc := db.connection.Model(&user).Updates(map[string]interface{}{
 		"session_token": "",
 		"refresh_token": "",
-		"st_expires": time.Time{},
-		"rt_expires": time.Time{},
+		"st_expires":    time.Time{},
+		"rt_expires":    time.Time{},
 	})
 	if uc.Error != nil {
 		return uc.Error
@@ -132,4 +133,20 @@ func (db *userConnection) GetUserSessionToken(userID uuid.UUID) (string, error) 
 		return "", ux.Error
 	}
 	return user.SessionToken, nil
+}
+
+func (db *userConnection) UpdateProfilePicture(ctx context.Context, userID uuid.UUID, url string) error {
+	uc := db.connection.WithContext(ctx).Model(&entity.User{}).Where("id = ?", userID).Update("profile_picture", url)
+	if uc.Error != nil {
+		return uc.Error
+	}
+	return nil
+}
+
+func (db *userConnection) ClearProfilePicture(ctx context.Context, userID uuid.UUID) error {
+	uc := db.connection.WithContext(ctx).Model(&entity.User{}).Where("id = ?", userID).Update("profile_picture", "")
+	if uc.Error != nil {
+		return uc.Error
+	}
+	return nil
 }

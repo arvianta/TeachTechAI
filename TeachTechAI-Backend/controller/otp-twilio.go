@@ -3,36 +3,36 @@ package controller
 import (
 	"context"
 	"net/http"
-	"teach-tech-ai/common"
 	"teach-tech-ai/dto"
 	"teach-tech-ai/entity"
 	"teach-tech-ai/service"
+	"teach-tech-ai/utils"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-type OTPController interface {
+type OTPTwilioController interface {
 	SendSMS(ctx *gin.Context)
 	VerifySMS(ctx *gin.Context)
 }
 
-type otpController struct {
-	otpService service.OTPService
+type otpTwilioController struct {
+	otpTwilioService service.OTPTwilioService
 }
 
-func NewOTPController(otp service.OTPService) OTPController {
-	return &otpController{
-		otpService: otp,
+func NewOTPTwilioController(otp service.OTPTwilioService) OTPTwilioController {
+	return &otpTwilioController{
+		otpTwilioService: otp,
 	}
 }
 
 const appTimeout = time.Second * 10
 
-func (o *otpController) SendSMS(ctx *gin.Context) {
+func (o *otpTwilioController) SendSMS(ctx *gin.Context) {
 	var smsData dto.GenerateOTPRequest
 	if err := ctx.ShouldBind(&smsData); err != nil {
-		response := common.BuildErrorResponse("OTP Gagal", err.Error(), common.EmptyObj{})
+		response := utils.BuildErrorResponse("OTP Gagal", err.Error(), utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
@@ -44,21 +44,21 @@ func (o *otpController) SendSMS(ctx *gin.Context) {
 		PhoneNumber: smsData.PhoneNumber,
 	}
 
-	_, err := o.otpService.TwilioSendOTP(newOTP.PhoneNumber)
+	_, err := o.otpTwilioService.TwilioSendOTP(newOTP.PhoneNumber)
 	if err != nil {
-		response := common.BuildErrorResponse("OTP Gagal", err.Error(), common.EmptyObj{})
+		response := utils.BuildErrorResponse("OTP Gagal", err.Error(), utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
 
-	response := common.BuildResponse(true, "OTP berhasil terkirim", common.EmptyObj{})
+	response := utils.BuildSuccessResponse("OTP berhasil terkirim", utils.EmptyObj{})
 	ctx.JSON(http.StatusOK, response)
 }
 
-func (o *otpController) VerifySMS(ctx *gin.Context) {
+func (o *otpTwilioController) VerifySMS(ctx *gin.Context) {
 	var verifyData dto.VerifyOTPRequest
 	if err := ctx.ShouldBind(&verifyData); err != nil {
-		response := common.BuildErrorResponse("Verifikasi OTP Gagal", err.Error(), common.EmptyObj{})
+		response := utils.BuildErrorResponse("Verifikasi OTP Gagal", err.Error(), utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
@@ -68,16 +68,16 @@ func (o *otpController) VerifySMS(ctx *gin.Context) {
 
 	newVerifyOTP := entity.VerifyData{
 		PhoneNumber: verifyData.PhoneNumber,
-		Code: verifyData.Code,
+		Code:        verifyData.Code,
 	}
 
-	err := o.otpService.TwilioVerifyOTP(newVerifyOTP.PhoneNumber, newVerifyOTP.Code)
+	err := o.otpTwilioService.TwilioVerifyOTP(newVerifyOTP.PhoneNumber, newVerifyOTP.Code)
 	if err != nil {
-		response := common.BuildErrorResponse("Verifikasi OTP Gagal", err.Error(), common.EmptyObj{})
+		response := utils.BuildErrorResponse("Verifikasi OTP Gagal", err.Error(), utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
 
-	response := common.BuildResponse(true, "Verifikasi OTP berhasil", common.EmptyObj{})
+	response := utils.BuildSuccessResponse("Verifikasi OTP berhasil", utils.EmptyObj{})
 	ctx.JSON(http.StatusOK, response)
 }

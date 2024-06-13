@@ -2,44 +2,43 @@ package service
 
 import (
 	"errors"
-	"teach-tech-ai/utils"
+	"teach-tech-ai/helpers"
 
 	"github.com/twilio/twilio-go"
 	twilioApi "github.com/twilio/twilio-go/rest/verify/v2"
 )
 
-type OTPService interface {
+type OTPTwilioService interface {
 	TwilioSendOTP(phoneNumber string) (string, error)
 	TwilioVerifyOTP(phoneNumber string, code string) error
 }
 
-type otpService struct {
+type otpTwilioService struct {
 	twilioAccountSID string
 	twilioAuthToken  string
 	twilioServiceSID string
 }
 
-func NewOTPService() OTPService {
-	return &otpService{
+func NewOTPTwilioService() OTPTwilioService {
+	return &otpTwilioService{
 		twilioAccountSID: getTwilioAccountSID(),
 		twilioAuthToken:  getTwilioAuthToken(),
 		twilioServiceSID: getTwilioServiceSID(),
 	}
 }
 
-
 func getTwilioAccountSID() string {
-	twilioAccountSID := utils.MustGetenv("TWILIO_ACCOUNT_SID")
+	twilioAccountSID := helpers.MustGetenv("TWILIO_ACCOUNT_SID")
 	return twilioAccountSID
 }
 
 func getTwilioAuthToken() string {
-	twilioAuthToken := utils.MustGetenv("TWILIO_AUTH_TOKEN")
+	twilioAuthToken := helpers.MustGetenv("TWILIO_AUTH_TOKEN")
 	return twilioAuthToken
 }
 
 func getTwilioServiceSID() string {
-	twilioServiceSID := utils.MustGetenv("TWILIO_SERVICE_SID")
+	twilioServiceSID := helpers.MustGetenv("TWILIO_SERVICE_SID")
 	return twilioServiceSID
 }
 
@@ -48,8 +47,7 @@ var client *twilio.RestClient = twilio.NewRestClientWithParams(twilio.ClientPara
 	Password: getTwilioAuthToken(),
 })
 
-
-func (o *otpService) TwilioSendOTP(phoneNumber string) (string, error) {
+func (o *otpTwilioService) TwilioSendOTP(phoneNumber string) (string, error) {
 	params := &twilioApi.CreateVerificationParams{}
 	params.SetTo(phoneNumber)
 	params.SetChannel("sms")
@@ -62,7 +60,7 @@ func (o *otpService) TwilioSendOTP(phoneNumber string) (string, error) {
 	return *resp.Sid, nil
 }
 
-func (o *otpService) TwilioVerifyOTP(phoneNumber string, code string) error {
+func (o *otpTwilioService) TwilioVerifyOTP(phoneNumber string, code string) error {
 	params := &twilioApi.CreateVerificationCheckParams{}
 	params.SetTo(phoneNumber)
 	params.SetCode(code)

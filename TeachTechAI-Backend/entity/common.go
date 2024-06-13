@@ -7,15 +7,9 @@ import (
 )
 
 type Timestamp struct {
-	CreatedAt 		time.Time 	`json:"created_at" default:"CURRENT_TIMESTAMP"`
-	UpdatedAt 		time.Time 	`json:"updated_at"`
-	DeletedAt 		gorm.DeletedAt
-}
-
-type Authorization struct {
-	SessionToken string `json:"session_token"`
-	RefreshToken string `json:"refresh_token"`
-	Role  		 string `json:"role"`
+	CreatedAt time.Time `json:"created_at" default:"CURRENT_TIMESTAMP"`
+	UpdatedAt time.Time `json:"updated_at"`
+	DeletedAt gorm.DeletedAt
 }
 
 type OTPData struct {
@@ -24,5 +18,5 @@ type OTPData struct {
 
 type VerifyData struct {
 	PhoneNumber string `json:"phone_number,omitempty" validate:"required"`
-	Code string   `json:"code,omitempty" validate:"required"`
+	Code        string `json:"code,omitempty" validate:"required"`
 }
