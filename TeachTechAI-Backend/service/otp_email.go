@@ -32,19 +32,31 @@ func GenerateOTP() string {
 	return fmt.Sprintf("%06d", rand.Intn(1000000))
 }
 
+const (
+	otpCooldown = 2 * time.Minute
+	otpExpiry   = 5 * time.Minute
+)
+
 func (oes *otpEmailService) SendOTPByEmail(ctx context.Context, email string) (string, error) {
 	existingOTP, err := oes.otpRepository.GetValidOTPByEmail(ctx, email)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return "", err
 	}
 
-	if existingOTP != nil && existingOTP.CreatedAt.Add(time.Minute).After(time.Now()) {
-		return "", errors.New("please wait for 1 minute before requesting another OTP")
+	if existingOTP != nil {
+		timeSinceCreation := time.Since(existingOTP.CreatedAt)
+		remainingCooldown := otpCooldown - timeSinceCreation
+		if remainingCooldown > 0 {
+			remainingCooldownSeconds := int(remainingCooldown.Seconds())
+			minutes := remainingCooldownSeconds / 60
+			seconds := remainingCooldownSeconds % 60
+			return "", fmt.Errorf("please wait for %d minute(s) and %d second(s) before requesting another OTP", minutes, seconds)
+		}
 	}
 
 	// Generate OTP
 	randomOTP := GenerateOTP()
-	expiresAt := time.Now().Add(time.Minute * 5)
+	expiresAt := time.Now().Add(otpExpiry)
 
 	otp := entity.OTP{
 		Email:     email,
@@ -56,6 +68,7 @@ func (oes *otpEmailService) SendOTPByEmail(ctx context.Context, email string) (s
 	if existingOTP != nil {
 		// Replace the previous OTP record with the new one
 		otp.ID = existingOTP.ID
+		otp.CreatedAt = time.Now()
 		err = oes.otpRepository.UpdateOTP(ctx, otp)
 		if err != nil {
 			return "", err
