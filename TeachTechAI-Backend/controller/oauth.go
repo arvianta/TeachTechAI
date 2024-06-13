@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
+	"teach-tech-ai/dto"
 	"teach-tech-ai/service"
 	"teach-tech-ai/utils"
 
@@ -18,39 +18,42 @@ type OAuthController interface {
 
 type oauthController struct {
 	oauthService service.OAuthService
+	userService  service.UserService
 }
 
-func NewOAuthController(ots service.OAuthService) OAuthController {
+func NewOAuthController(ots service.OAuthService, us service.UserService) OAuthController {
 	return &oauthController{
 		oauthService: ots,
+		userService:  us,
 	}
 }
 
 // type contextKey string
 
 func (oc *oauthController) GetAuthCallbackFunction(ctx *gin.Context) {
-	// provider := ctx.Param("provider")
-	// ctx.Request = ctx.Request.WithContext(context.WithValue(context.Background(), contextKey("provider"), provider))
 	q := ctx.Request.URL.Query()
 	q.Add("provider", "google")
 	ctx.Request.URL.RawQuery = q.Encode()
 
 	user, err := gothic.CompleteUserAuth(ctx.Writer, ctx.Request)
 	if err != nil {
-		response := utils.BuildErrorResponse("Gagal Login", "OAuth Error", utils.EmptyObj{})
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_LOGIN, err.Error(), utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
 
-	fmt.Println(user)
+	res, err := oc.userService.LoginRegisterWithOAuth(ctx, user)
+	if err != nil {
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_LOGIN, err.Error(), utils.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
 
-	response := utils.BuildSuccessResponse("Berhasil Login", user)
+	response := utils.BuildSuccessResponse(dto.MESSAGE_SUCCESS_LOGIN, res)
 	ctx.JSON(http.StatusOK, response)
 }
 
 func (oc *oauthController) Logout(ctx *gin.Context) {
-	// provider := ctx.Param("provider")
-	// ctx.Request = ctx.Request.WithContext(context.WithValue(context.Background(), contextKey("provider"), provider))
 	q := ctx.Request.URL.Query()
 	q.Add("provider", "google")
 	ctx.Request.URL.RawQuery = q.Encode()
@@ -62,8 +65,6 @@ func (oc *oauthController) Logout(ctx *gin.Context) {
 }
 
 func (oc *oauthController) Authenticate(ctx *gin.Context) {
-	// provider := ctx.Param("provider")
-	// ctx.Request = ctx.Request.WithContext(context.WithValue(ctx.Request.Context(), contextKey("provider"), provider))
 	q := ctx.Request.URL.Query()
 	q.Add("provider", "google")
 	ctx.Request.URL.RawQuery = q.Encode()

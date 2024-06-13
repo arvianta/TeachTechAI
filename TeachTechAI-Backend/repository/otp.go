@@ -38,7 +38,11 @@ func (db *otpEmailRepository) GetOTPByEmail(ctx context.Context, email string) (
 }
 
 func (db *otpEmailRepository) UpdateOTP(ctx context.Context, otp entity.OTP) error {
-	result := db.connection.WithContext(ctx).Model(&entity.OTP{}).Where("id = ?", otp.ID).Updates(&otp)
+	result := db.connection.WithContext(ctx).Model(&entity.OTP{}).Where("id = ?", otp.ID).Updates(map[string]interface{}{
+		"otp":        otp.OTP,
+		"created_at": otp.CreatedAt,
+		"expires_at": otp.ExpiresAt,
+	})
 	if result.Error != nil {
 		return result.Error
 	}
