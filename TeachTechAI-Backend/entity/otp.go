@@ -12,6 +12,7 @@ type OTP struct {
 	Email     string    `gorm:"type:varchar(255);not_null" json:"email"`
 	OTP       string    `gorm:"type:varchar(255);not_null" json:"otp"`
 	CreatedAt time.Time `gorm:"type:timestamp;not_null" json:"created_at"`
+	UpdatedAt time.Time `gorm:"type:timestamp;not_null" json:"updated_at"`
 	ExpiresAt time.Time `gorm:"type:timestamp;not_null" json:"expires_at"`
 }
 

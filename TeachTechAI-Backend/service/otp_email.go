@@ -32,49 +32,52 @@ func GenerateOTP() string {
 	return fmt.Sprintf("%06d", rand.Intn(1000000))
 }
 
-const (
-	otpCooldown = 2 * time.Minute
-	otpExpiry   = 5 * time.Minute
-)
-
 func (oes *otpEmailService) SendOTPByEmail(ctx context.Context, email string) (string, error) {
 	existingOTP, err := oes.otpRepository.GetValidOTPByEmail(ctx, email)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return "", err
 	}
 
+	now, err := utils.GetCurrentTime()
+	if err != nil {
+		return "", err
+	}
+
 	if existingOTP != nil {
-		timeSinceCreation := time.Since(existingOTP.CreatedAt)
-		remainingCooldown := otpCooldown - timeSinceCreation
-		if remainingCooldown > 0 {
-			remainingCooldownSeconds := int(remainingCooldown.Seconds())
-			minutes := remainingCooldownSeconds / 60
-			seconds := remainingCooldownSeconds % 60
+		minutes, seconds, err := utils.CalculateRemainingCooldown(existingOTP.CreatedAt)
+		if err != nil {
+			return "", err
+		}
+		if minutes > 0 || seconds > 0 {
 			return "", fmt.Errorf("please wait for %d minute(s) and %d second(s) before requesting another OTP", minutes, seconds)
 		}
 	}
 
 	// Generate OTP
 	randomOTP := GenerateOTP()
-	expiresAt := time.Now().Add(otpExpiry)
-
-	otp := entity.OTP{
-		Email:     email,
-		OTP:       randomOTP,
-		ExpiresAt: expiresAt,
+	expiresAt, err := utils.GetExpiryTime()
+	if err != nil {
+		return "", err
 	}
 
 	// Store OTP in the database
 	if existingOTP != nil {
 		// Replace the previous OTP record with the new one
-		otp.ID = existingOTP.ID
-		otp.CreatedAt = time.Now()
-		err = oes.otpRepository.UpdateOTP(ctx, otp)
+		existingOTP.CreatedAt = now
+		existingOTP.ExpiresAt = expiresAt
+		existingOTP.OTP = randomOTP
+		err = oes.otpRepository.UpdateOTP(ctx, *existingOTP)
 		if err != nil {
 			return "", err
 		}
 	} else {
 		// Create a new OTP record
+		otp := entity.OTP{
+			Email:     email,
+			OTP:       randomOTP,
+			CreatedAt: now,
+			ExpiresAt: expiresAt,
+		}
 		err = oes.otpRepository.CreateOTP(ctx, otp)
 		if err != nil {
 			return "", err
