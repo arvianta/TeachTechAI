@@ -3,10 +3,10 @@ package controller
 import (
 	"context"
 	"net/http"
-	"teach-tech-ai/common"
 	"teach-tech-ai/dto"
 	"teach-tech-ai/entity"
 	"teach-tech-ai/service"
+	"teach-tech-ai/utils"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -32,7 +32,7 @@ const appTimeout = time.Second * 10
 func (o *otpTwilioController) SendSMS(ctx *gin.Context) {
 	var smsData dto.GenerateOTPRequest
 	if err := ctx.ShouldBind(&smsData); err != nil {
-		response := common.BuildErrorResponse("OTP Gagal", err.Error(), common.EmptyObj{})
+		response := utils.BuildErrorResponse("OTP Gagal", err.Error(), utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
@@ -46,19 +46,19 @@ func (o *otpTwilioController) SendSMS(ctx *gin.Context) {
 
 	_, err := o.otpTwilioService.TwilioSendOTP(newOTP.PhoneNumber)
 	if err != nil {
-		response := common.BuildErrorResponse("OTP Gagal", err.Error(), common.EmptyObj{})
+		response := utils.BuildErrorResponse("OTP Gagal", err.Error(), utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
 
-	response := common.BuildResponse(true, "OTP berhasil terkirim", common.EmptyObj{})
+	response := utils.BuildSuccessResponse("OTP berhasil terkirim", utils.EmptyObj{})
 	ctx.JSON(http.StatusOK, response)
 }
 
 func (o *otpTwilioController) VerifySMS(ctx *gin.Context) {
 	var verifyData dto.VerifyOTPRequest
 	if err := ctx.ShouldBind(&verifyData); err != nil {
-		response := common.BuildErrorResponse("Verifikasi OTP Gagal", err.Error(), common.EmptyObj{})
+		response := utils.BuildErrorResponse("Verifikasi OTP Gagal", err.Error(), utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
@@ -73,11 +73,11 @@ func (o *otpTwilioController) VerifySMS(ctx *gin.Context) {
 
 	err := o.otpTwilioService.TwilioVerifyOTP(newVerifyOTP.PhoneNumber, newVerifyOTP.Code)
 	if err != nil {
-		response := common.BuildErrorResponse("Verifikasi OTP Gagal", err.Error(), common.EmptyObj{})
+		response := utils.BuildErrorResponse("Verifikasi OTP Gagal", err.Error(), utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
 
-	response := common.BuildResponse(true, "Verifikasi OTP berhasil", common.EmptyObj{})
+	response := utils.BuildSuccessResponse("Verifikasi OTP berhasil", utils.EmptyObj{})
 	ctx.JSON(http.StatusOK, response)
 }

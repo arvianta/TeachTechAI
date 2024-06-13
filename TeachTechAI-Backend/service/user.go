@@ -29,7 +29,7 @@ type UserService interface {
 	MeUser(ctx context.Context, userID uuid.UUID) (entity.User, error)
 	FindUserRoleByRoleID(roleID uuid.UUID) (string, error)
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
-	StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error
+	StoreUserToken(ctx context.Context, userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error
 	UploadUserProfilePicture(ctx context.Context, userID uuid.UUID, localFilePath string) error
 	GetUserProfilePicture(ctx context.Context, userID uuid.UUID) (string, error)
 	DeleteUserProfilePicture(ctx context.Context, userID uuid.UUID) error
@@ -154,7 +154,7 @@ func (us *userService) CheckUser(ctx context.Context, email string) (bool, error
 	if result.Email == "" {
 		return false, nil
 	}
-	return true, nil
+	return true, dto.ErrEmailAlreadyExists
 }
 
 func (us *userService) UpdateUser(ctx context.Context, userDTO dto.UserUpdateInfoDTO) error {
@@ -235,8 +235,8 @@ func (us *userService) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 	return us.userRepository.DeleteUser(ctx, userID)
 }
 
-func (us *userService) StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error {
-	return us.userRepository.StoreUserToken(userID, sessionToken, refreshToken, atx, rtx)
+func (us *userService) StoreUserToken(ctx context.Context, userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error {
+	return us.userRepository.StoreUserToken(ctx, userID, sessionToken, refreshToken, atx, rtx)
 }
 
 func (us *userService) UploadUserProfilePicture(ctx context.Context, userID uuid.UUID, localFilePath string) error {

@@ -5,7 +5,6 @@ import (
 	"os"
 )
 
-// DeleteTempFile deletes a temporary file.
 func DeleteTempFile(filePath string) error {
 	err := os.Remove(filePath)
 	if err != nil {

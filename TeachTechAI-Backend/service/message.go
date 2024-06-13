@@ -35,7 +35,7 @@ func (ms *messageService) CreateMessage(ctx context.Context, msgDTO dto.MessageR
 	message := entity.Message{}
 	var err error
 	//AI Model ID
-	aimodelID, err := ms.aimodelRepository.FindAIModelIDByName(msgDTO.AIModelName)
+	aimodelID, err := ms.aimodelRepository.FindAIModelIDByName(ctx, msgDTO.AIModelName)
 	if err != nil {
 		return dto.MessageResponseDTO{}, err
 	}
@@ -60,7 +60,7 @@ func (ms *messageService) CreateMessage(ctx context.Context, msgDTO dto.MessageR
 	message.NumOfTokens = response.Usage.CompletionTokens
 	message.FinishReason = response.Choices[0].FinishReason
 	// Store Message to DB
-	message, err = ms.messageRepository.StoreMessage(message)
+	message, err = ms.messageRepository.StoreMessage(ctx, message)
 	if err != nil {
 		return dto.MessageResponseDTO{}, err
 	}

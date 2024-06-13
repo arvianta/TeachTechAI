@@ -11,7 +11,6 @@ import (
 func UserRoutes(router *gin.Engine, UserController controller.UserController, jwtService service.JWTService) {
 	userRoutes := router.Group("/api/user")
 	{
-		userRoutes.GET("", middleware.Authenticate(jwtService), UserController.GetAllUser)
 		userRoutes.POST("/register", UserController.RegisterUser)
 		userRoutes.POST("/send-otp", UserController.SendVerificationOTPByEmail)
 		userRoutes.POST("/verify-otp", UserController.VerifyEmailWithOTP)

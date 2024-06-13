@@ -38,7 +38,7 @@ type Message struct {
 	Content string `json:"content"`
 }
 
-type Response struct {
+type AIResponse struct {
 	ID                string   `json:"id"`
 	Object            string   `json:"object"`
 	Created           int64    `json:"created"`
@@ -84,7 +84,7 @@ type Usage struct {
 //     FinishReason    string   `json:"finish_reason"`
 // }
 
-func PromptAI(inputs string, model string) (*Response, error) {
+func PromptAI(inputs string, model string) (*AIResponse, error) {
 	requestBody := Request{
 		FrequencyPenalty: 1,
 		MaxTokens:        2048,
@@ -131,7 +131,7 @@ func PromptAI(inputs string, model string) (*Response, error) {
 	}
 	defer resp.Body.Close()
 
-	var response Response
+	var response AIResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %v", err)
 	}

@@ -2,9 +2,9 @@ package controller
 
 import (
 	"net/http"
-	"teach-tech-ai/common"
 	"teach-tech-ai/dto"
 	"teach-tech-ai/service"
+	"teach-tech-ai/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -34,22 +34,22 @@ func (mc *messageController) CreateMessage(ctx *gin.Context) {
 	var msg dto.MessageRequestDTO
 	err := ctx.ShouldBind(&msg)
 	if err != nil {
-		response := common.BuildErrorResponse("Gagal Membuat Pesan", err.Error(), common.EmptyObj{})
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
 	token := ctx.MustGet("token").(string)
 	userID, err := mc.jwtService.GetUserIDByToken(token)
 	if err != nil {
-		response := common.BuildErrorResponse("Gagal Memproses Request", "Token Tidak Valid", nil)
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_PROCESSING_REQUEST, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 		return
 	}
 
 	if msg.ConversationID == "" {
-		conversation, err := mc.conversationService.CreateConversation(userID, msg.Topic)
+		conversation, err := mc.conversationService.CreateConversation(ctx.Request.Context(), userID, msg.Topic)
 		if err != nil {
-			response := common.BuildErrorResponse("Gagal Membuat Pesan", err.Error(), common.EmptyObj{})
+			response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_CREATING_MESSAGE, err.Error(), nil)
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 			return
 		}
@@ -58,25 +58,25 @@ func (mc *messageController) CreateMessage(ctx *gin.Context) {
 
 	convoID, err := uuid.Parse(msg.ConversationID)
 	if err != nil {
-		response := common.BuildErrorResponse("Gagal Membuat Pesan", "Invalid conversation ID", common.EmptyObj{})
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_CREATING_MESSAGE, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
 
-	if valid, err := mc.conversationService.ValidateUserConversation(userID, convoID); !valid || err != nil {
-		response := common.BuildErrorResponse("Gagal Membuat Pesan", "Anda Tidak Memiliki Akses", common.EmptyObj{})
+	if valid, err := mc.conversationService.ValidateUserConversation(ctx.Request.Context(), userID, convoID); !valid || err != nil {
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_CREATING_MESSAGE, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 		return
 	}
 
 	message, err := mc.messageService.CreateMessage(ctx.Request.Context(), msg)
 	if err != nil {
-		res := common.BuildErrorResponse("Gagal Membuat Pesan", err.Error(), common.EmptyObj{})
+		res := utils.BuildErrorResponse(dto.MESSAGE_FAILED_CREATING_MESSAGE, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
 
-	res := common.BuildResponse(true, "Berhasil Membuat Pesan", message)
+	res := utils.BuildSuccessResponse(dto.MESSAGE_SUCCESS_CREATE_MESSAGE, message)
 	ctx.JSON(http.StatusCreated, res)
 }
 
@@ -84,14 +84,14 @@ func (mc *messageController) CreateMessage(ctx *gin.Context) {
 // 	var msg dto.MessageRequestDTO
 // 	err := ctx.ShouldBind(&msg)
 // 	if err != nil {
-// 		response := common.BuildErrorResponse("Gagal Membuat Pesan", err.Error(), common.EmptyObj{})
+// 		response := utils.BuildErrorResponse("Gagal Membuat Pesan", err.Error(), utils.EmptyObj{})
 // 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 // 		return
 // 	}
 // 	token := ctx.MustGet("token").(string)
 // 	userID, err := mc.jwtService.GetUserIDByToken(token)
 // 	if err != nil {
-// 		response := common.BuildErrorResponse("Gagal Memproses Request", "Token Tidak Valid", nil)
+// 		response := utils.BuildErrorResponse("Gagal Memproses Request", "Token Tidak Valid", nil)
 // 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 // 		return
 // 	}
@@ -99,7 +99,7 @@ func (mc *messageController) CreateMessage(ctx *gin.Context) {
 // 	if msg.ConversationID == "" {
 // 		conversation, err := mc.conversationService.CreateConversation(userID, msg.Topic)
 // 		if err != nil {
-// 			response := common.BuildErrorResponse("Gagal Membuat Pesan", err.Error(), common.EmptyObj{})
+// 			response := utils.BuildErrorResponse("Gagal Membuat Pesan", err.Error(), utils.EmptyObj{})
 // 			ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 // 			return
 // 		}
@@ -108,13 +108,13 @@ func (mc *messageController) CreateMessage(ctx *gin.Context) {
 
 // 	convoID, err := uuid.Parse(msg.ConversationID)
 // 	if err != nil {
-// 		response := common.BuildErrorResponse("Gagal Membuat Pesan", "Invalid conversation ID", common.EmptyObj{})
+// 		response := utils.BuildErrorResponse("Gagal Membuat Pesan", "Invalid conversation ID", utils.EmptyObj{})
 // 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 // 		return
 // 	}
 
 // 	if valid, err := mc.conversationService.ValidateUserConversation(userID, convoID); !valid || err != nil {
-// 		response := common.BuildErrorResponse("Gagal Membuat Pesan", "Anda Tidak Memiliki Akses", common.EmptyObj{})
+// 		response := utils.BuildErrorResponse("Gagal Membuat Pesan", "Anda Tidak Memiliki Akses", utils.EmptyObj{})
 // 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 // 		return
 // 	}
@@ -130,7 +130,7 @@ func (mc *messageController) CreateMessage(ctx *gin.Context) {
 // 	// Call service layer to create message and stream response
 // 	responseChan, err := mc.messageService.CreateMessageStream(streamCtx, msg)
 // 	if err != nil {
-// 		response := common.BuildErrorResponse("Gagal Membuat Pesan", err.Error(), common.EmptyObj{})
+// 		response := utils.BuildErrorResponse("Gagal Membuat Pesan", err.Error(), utils.EmptyObj{})
 // 		ctx.JSON(http.StatusInternalServerError, response)
 // 		return
 // 	}
@@ -138,7 +138,7 @@ func (mc *messageController) CreateMessage(ctx *gin.Context) {
 // 	// Stream response to client
 // 	flusher, ok := ctx.Writer.(http.Flusher)
 // 	if !ok {
-// 		response := common.BuildErrorResponse("Streaming not supported", "Failed to stream response", common.EmptyObj{})
+// 		response := utils.BuildErrorResponse("Streaming not supported", "Failed to stream response", utils.EmptyObj{})
 // 		ctx.JSON(http.StatusInternalServerError, response)
 // 		return
 // 	}
@@ -154,7 +154,7 @@ func (mc *messageController) GetMessagesFromConversation(ctx *gin.Context) {
 
 	convoID, err := uuid.Parse(conversationID)
 	if err != nil {
-		response := common.BuildErrorResponse("Invalid conversation ID", "Invalid ID format", common.EmptyObj{})
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_GET_MESSAGE, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -162,13 +162,13 @@ func (mc *messageController) GetMessagesFromConversation(ctx *gin.Context) {
 	token := ctx.MustGet("token").(string)
 	userID, err := mc.jwtService.GetUserIDByToken(token)
 	if err != nil {
-		response := common.BuildErrorResponse("Failed to fetch messages", "Invalid token", nil)
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_GET_MESSAGE, err.Error(), nil)
 		ctx.JSON(http.StatusUnauthorized, response)
 		return
 	}
 
-	if valid, err := mc.conversationService.ValidateUserConversation(userID, convoID); !valid || err != nil {
-		response := common.BuildErrorResponse("Failed to fetch messages", "You do not have access to this conversation", common.EmptyObj{})
+	if valid, err := mc.conversationService.ValidateUserConversation(ctx.Request.Context(), userID, convoID); !valid || err != nil {
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_GET_MESSAGE, err.Error(), nil)
 		ctx.JSON(http.StatusUnauthorized, response)
 		return
 	}
@@ -178,18 +178,11 @@ func (mc *messageController) GetMessagesFromConversation(ctx *gin.Context) {
 
 	messagesDTO, err := mc.messageService.GetMessagesFromConversation(ctx.Request.Context(), convoDTO)
 	if err != nil {
-		response := common.BuildErrorResponse("Failed to fetch messages", err.Error(), common.EmptyObj{})
+		response := utils.BuildErrorResponse(dto.MESSAGE_FAILED_GET_MESSAGE, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	// IF WAMT RETURN ERROR WHEN MESSAGES IN A CONVO IS NULL
-	// if len(messagesDTO.Messages) == 0 {
-	// 	response := common.BuildErrorResponse("No messages found", "The conversation does not contain any messages", common.EmptyObj{})
-	// 	ctx.JSON(http.StatusNotFound, response)
-	// 	return
-	// }
-
-	res := common.BuildResponse(true, "Messages fetched successfully", messagesDTO)
+	res := utils.BuildSuccessResponse(dto.MESSAGE_SUCCESS_GET_MESSAGE, messagesDTO)
 	ctx.JSON(http.StatusOK, res)
 }

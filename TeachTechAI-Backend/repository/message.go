@@ -9,7 +9,7 @@ import (
 )
 
 type MessageRepository interface {
-	StoreMessage(message entity.Message) (entity.Message, error)
+	StoreMessage(ctx context.Context, message entity.Message) (entity.Message, error)
 	GetMessagesFromConversation(ctx context.Context, conversationID uuid.UUID) ([]entity.Message, error)
 }
 
@@ -23,9 +23,9 @@ func NewMessageRepository(db *gorm.DB) MessageRepository {
 	}
 }
 
-func (db *messageConnection) StoreMessage(message entity.Message) (entity.Message, error) {
+func (db *messageConnection) StoreMessage(ctx context.Context, message entity.Message) (entity.Message, error) {
 	message.ID = uuid.New()
-	uc := db.connection.Create(&message)
+	uc := db.connection.WithContext(ctx).Create(&message)
 	if uc.Error != nil {
 		return entity.Message{}, uc.Error
 	}
@@ -34,7 +34,7 @@ func (db *messageConnection) StoreMessage(message entity.Message) (entity.Messag
 
 func (db *messageConnection) GetMessagesFromConversation(ctx context.Context, conversationID uuid.UUID) ([]entity.Message, error) {
 	var messages []entity.Message
-	result := db.connection.Where("conversation_id = ?", conversationID).Order("datetime ASC").Find(&messages)
+	result := db.connection.WithContext(ctx).Where("conversation_id = ?", conversationID).Order("datetime ASC").Find(&messages)
 	if result.Error != nil {
 		return nil, result.Error
 	}

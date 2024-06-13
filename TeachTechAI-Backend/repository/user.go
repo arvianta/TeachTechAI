@@ -16,7 +16,7 @@ type UserRepository interface {
 	FindUserByID(ctx context.Context, userID uuid.UUID) (entity.User, error)
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
 	UpdateUser(ctx context.Context, user entity.User) error
-	StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error
+	StoreUserToken(ctx context.Context, userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error
 	FindUserRoleIDByID(userID uuid.UUID) (uuid.UUID, error)
 	InvalidateUserToken(userID uuid.UUID) error
 	GetUserSessionToken(userID uuid.UUID) (string, error)
@@ -85,9 +85,9 @@ func (db *userConnection) UpdateUser(ctx context.Context, user entity.User) erro
 	return nil
 }
 
-func (db *userConnection) StoreUserToken(userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error {
+func (db *userConnection) StoreUserToken(ctx context.Context, userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error {
 	user := entity.User{ID: userID}
-	uc := db.connection.Model(&user).Updates(map[string]interface{}{
+	uc := db.connection.WithContext(ctx).Model(&user).Updates(map[string]interface{}{
 		"session_token": sessionToken,
 		"refresh_token": refreshToken,
 		"st_expires":    atx,

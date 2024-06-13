@@ -1,19 +1,19 @@
-package common
+package utils
 
 type Response struct {
 	Status  bool   `json:"status"`
 	Message string `json:"message"`
-	Errors  any    `json:"errors"`
-	Data    any    `json:"data"`
+	Error   any    `json:"error,omitempty"`
+	Data    any    `json:"data,omitempty"`
+	Meta    any    `json:"meta,omitempty"`
 }
 
 type EmptyObj struct{}
 
-func BuildResponse(status bool, message string, data any) Response {
+func BuildSuccessResponse(message string, data any) Response {
 	res := Response{
-		Status:  status,
+		Status:  true,
 		Message: message,
-		Errors:  nil,
 		Data:    data,
 	}
 	return res
@@ -23,7 +23,7 @@ func BuildErrorResponse(message string, err string, data any) Response {
 	res := Response{
 		Status:  false,
 		Message: message,
-		Errors:  err,
+		Error:   err,
 		Data:    data,
 	}
 	return res
