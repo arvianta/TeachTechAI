@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-  
+    <item
+        android:id="@+id/navigation_discover"
+        android:title="Discover"
+        android:icon="@drawable/discover"
+        android:iconTint="@color/kaizen_primary"/>
+    <item
+        android:id="@+id/navigation_search"
+        android:title="Search"
+        android:icon="@drawable/baseline_search_24"
+        android:iconTint="@color/kaizen_primary"/>
+    <item
+        android:id="@+id/navigation_profile"
+        android:title="Profile"
+        android:icon="@drawable/baseline_person_outline_24"
+        android:iconTint="@color/kaizen_primary"/>
 </menu>

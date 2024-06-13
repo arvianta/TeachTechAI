@@ -6,7 +6,7 @@
     android:padding="30dp"
     android:id="@+id/verifyFragment"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".view.inputotp.VerifyOtp">
+    tools:context=".view.inputotp.VerifyOTP">
 
     <TextView
         android:id="@+id/fp_tvLupaKataSandi"
@@ -43,20 +43,24 @@
     <com.chaos.view.PinView
         android:id="@+id/verify_inputOTP"
         android:layout_marginTop="40dp"
+        android:textSize="20sp"
+        android:fontFamily="@font/poppins_bold"
         android:inputType="number"
+        android:cursorVisible="true"
         app:layout_constraintTop_toBottomOf="@+id/fp_ivLock"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:itemCount="6"
         app:lineColor="@color/kaizen_primary"
         app:itemSpacing="10dp"
-        app:hideLineWhenFilled="true"
         app:viewType="line"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
     <Button
-        android:id="@+id/fp_buttonReset"
+        android:id="@+id/fp_buttonVerifikasi"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         app:layout_constraintTop_toBottomOf="@+id/verify_inputOTP"

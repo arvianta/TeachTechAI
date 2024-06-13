@@ -16,7 +16,3 @@ data class LogoutResponse(
 	@field:SerializedName("status")
 	val status: Boolean? = null
 )
-
-data class Data(
-	val any: Any? = null
-)

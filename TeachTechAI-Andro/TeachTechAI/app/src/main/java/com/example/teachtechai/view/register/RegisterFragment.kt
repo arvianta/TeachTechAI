@@ -6,6 +6,7 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.TextWatcher
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.util.Patterns
 import android.util.TypedValue
 import androidx.fragment.app.Fragment
@@ -18,14 +19,15 @@ import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import com.example.teachtechai.R
 import com.example.teachtechai.databinding.FragmentRegisterBinding
-import com.example.teachtechai.view.login.LoginFragment
+import com.example.teachtechai.view.inputotp.VerifyOTP
 
 class RegisterFragment : Fragment() {
     private lateinit var binding : FragmentRegisterBinding
     private val registerViewModel : RegisterViewModel by viewModels()
+    val verifyOTP = VerifyOTP()
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -39,18 +41,14 @@ class RegisterFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         emailpasswordValidation()
-        binding.registerTvMasukSekarang.setOnClickListener{
-            navigateToLogin()
-        }
-
         buttonRegister()
         observeData()
     }
 
     private fun observeData() {
-        registerViewModel.registerResult.observe(viewLifecycleOwner){response ->
+        registerViewModel.otpResponse.observe(viewLifecycleOwner){response ->
             if(response.status == true){
-                showDialogBoxRegister()
+                navigateToVerifyOTP(verifyOTP)
             }
         }
     }
@@ -61,7 +59,12 @@ class RegisterFragment : Fragment() {
             val email = binding.registerEditEmail.text.toString()
             val password = binding.registerEditPassword.text.toString()
 
+            val bundle = Bundle()
+
+            bundle.putString("email", email)
+            verifyOTP.arguments = bundle
             registerViewModel.registerUser(name, email, password)
+            registerViewModel.sendOTP(email)
         }
     }
 
@@ -163,27 +166,10 @@ class RegisterFragment : Fragment() {
             buttonDaftar.background = requireContext().getDrawable(R.drawable.button_shapedisable)
         }
     }
-    private fun showDialogBoxRegister(){
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_registration_success, null)
-        val dialogBuilder = AlertDialog.Builder(requireContext())
-            .setView(dialogView)
 
-        val alertDialog = dialogBuilder.create()
-        alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        alertDialog.show()
-
-        val width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 301f, resources.displayMetrics).toInt()
-        val height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 315f, resources.displayMetrics).toInt()
-        alertDialog.window?.setLayout(width, height)
-        val buttonSuccess = dialogView.findViewById<Button>(R.id.buttonOk)
-        buttonSuccess.setOnClickListener {
-            alertDialog.dismiss()
-            navigateToLogin()
-        }
-    }
-    private fun navigateToLogin(){
+    private fun navigateToVerifyOTP(verifyOTP: VerifyOTP){
         parentFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, LoginFragment())
+            .replace(R.id.fragment_container, verifyOTP)
             .addToBackStack(null)
             .commit()
     }

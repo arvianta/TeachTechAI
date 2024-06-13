@@ -1,5 +1,6 @@
 package com.example.teachtechai.view.login
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
@@ -12,13 +13,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.example.teachtechai.R
+import com.example.teachtechai.data.pref.UserPreference
+import com.example.teachtechai.data.pref.dataStore
 import com.example.teachtechai.databinding.FragmentLoginBinding
 import com.example.teachtechai.view.ViewModelFactory
-import com.example.teachtechai.view.chat.ChatFragment
+import com.example.teachtechai.view.dashboard.DashboardActivity
 import com.example.teachtechai.view.forgetpassword.ForgetPassword
 import com.example.teachtechai.view.register.RegisterFragment
+import kotlinx.coroutines.launch
 
 class LoginFragment : Fragment() {
     private lateinit var binding: FragmentLoginBinding
@@ -26,6 +33,8 @@ class LoginFragment : Fragment() {
     private val loginViewModel by viewModels<LoginViewModel> {
         ViewModelFactory.getInstance(requireContext())
     }
+    private lateinit var userPreference: UserPreference
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -37,6 +46,7 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        userPreference = UserPreference.getInstance(requireContext().dataStore)
 
         emailpasswordValidation()
         navigatetoLupaKataSandi()
@@ -44,12 +54,18 @@ class LoginFragment : Fragment() {
 
         buttonLogin()
         observeData()
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                requireActivity().finish()
+            }
+        })
     }
 
     private fun observeData() {
         loginViewModel.loginResult.observe(viewLifecycleOwner) { response ->
             if (response.status == true) {
-                navigateToChat()
+                navigateToDashboard()
             }
         }
         loginViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
@@ -90,6 +106,15 @@ class LoginFragment : Fragment() {
         }
     }
 
+    private fun checkToken(){
+       lifecycleScope.launch {
+            val token = userPreference.getToken()
+            if(token != null){
+                navigateToDashboard()
+            }
+       }
+    }
+
     private fun buttonLogin(){
         binding.loginButtonMasuk.setOnClickListener {
             val email = binding.loginEditEmail.text.toString()
@@ -101,11 +126,9 @@ class LoginFragment : Fragment() {
         }
 
     }
-    private fun navigateToChat() {
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, ChatFragment())
-            .addToBackStack(null)
-            .commit()
+    private fun navigateToDashboard() {
+        val intent = Intent(requireContext(), DashboardActivity :: class.java)
+        startActivity(intent)
     }
 
     private fun navigatetoLupaKataSandi() {

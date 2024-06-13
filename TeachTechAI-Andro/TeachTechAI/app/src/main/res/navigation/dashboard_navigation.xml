@@ -1,6 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:app="http://schemas.android.com/apk/res-auto"
-             android:id="@+id/dashboard_navigation">
-
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dashboard_navigation"
+    app:startDestination="@+id/discoverFragment">
+    <fragment
+        android:id="@+id/discoverFragment"
+        android:name="com.example.teachtechai.view.discover.DiscoverFragment"
+        tools:layout="@layout/fragment_discover"
+        android:label="discover"/>
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.example.teachtechai.view.search.SearchFragment"
+        tools:layout="@layout/fragment_search"
+        android:label="search"/>
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.example.teachtechai.view.editprofile.EditProfileFragment"
+        tools:layout="@layout/fragment_edit_profile"
+        android:label="editprofile">
+        <action
+            android:id="@+id/editProfile_to_profileFragment"
+            app:destination="@+id/profileFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.teachtechai.view.profile.ProfileFragment"
+        tools:layout="@layout/fragment_profile"
+        android:label="profile">
+        <action
+            android:id="@+id/profileFragment_to_editProfileFragment"
+            app:destination="@+id/editProfileFragment" />
+    </fragment>
 </navigation>
