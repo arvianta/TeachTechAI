@@ -1,60 +1,98 @@
 package com.example.teachtechai.view.discover
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.teachtechai.MainActivity
 import com.example.teachtechai.R
+import com.example.teachtechai.data.User
+import com.example.teachtechai.data.pref.UserPreference
+import com.example.teachtechai.data.pref.dataStore
+import com.example.teachtechai.databinding.FragmentDiscoverBinding
+import com.example.teachtechai.databinding.FragmentDiscoverShimmerBinding
+import com.example.teachtechai.view.SharedViewModel
+import com.facebook.shimmer.ShimmerFrameLayout
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [DiscoverFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class DiscoverFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
-
+    private lateinit var binding: FragmentDiscoverBinding
+    private lateinit var userPreference : UserPreference
+    private val discoverViewModel : DiscoverViewModel by viewModels()
+    private val sharedViewModel : SharedViewModel by activityViewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_discover, container, false)
+        binding = FragmentDiscoverBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment DiscoverFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            DiscoverFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        userPreference = UserPreference.getInstance(requireContext().dataStore)
+        val topics = listOf(
+            Topic("SENI DAN OLAHRAGA", "Mengembangkan Kreativitas melalui Seni", R.drawable.topic_image),
+            Topic("LITERASI DIGITAL", "Penggunaan Alat Digital dalam Pembelajaran", R.drawable.topic_image2),
+            Topic("SOFT SKILLS", "Mengembangkan Pola Pikir Kritis", R.drawable.topic_image3),
+            Topic("SOSIAL MORAL", "Membentuk Kebiasaan Bertanggung Jawab pada Anak", R.drawable.topic_image4)
+        )
+        val recyclerView: RecyclerView = view.findViewById(R.id.discover_rv)
+        recyclerView.layoutManager = GridLayoutManager(context, 2)
+        recyclerView.adapter = TopicAdapter(topics)
+
+        val recyclerViewBaru: RecyclerView = view.findViewById(R.id.discover_rv2)
+        recyclerViewBaru.layoutManager = GridLayoutManager(context, 2)
+        recyclerViewBaru.adapter = TopicAdapter(topics)
+
+        getMe()
+        setData()
+        observeData()
     }
+    private fun getMe(){
+        runBlocking{
+            val token = userPreference.getToken()
+            if (token != null) {
+                discoverViewModel.getMe(token)
+            }
+        }
+    }
+
+    private fun setData(){
+        discoverViewModel.getMeResponse.observe(viewLifecycleOwner) { response ->
+            val id = response.data?.id
+            val email = response.data?.email
+            val name = response.data?.name
+            if (id != null && email != null && name != null) {
+                val user = User(id, email, name)
+                sharedViewModel.setUser(user)
+            }
+        }
+    }
+    private fun observeData() {
+        sharedViewModel.user.observe(viewLifecycleOwner){user->
+            val nameDiscover = binding.discoverDiscoverNama
+            nameDiscover.text = user.name
+        }
+    }
+
+    private fun checkToken(){
+        runBlocking {
+            val token = userPreference.getToken()
+            if(token == null){
+                val intent = Intent(requireContext(), MainActivity::class.java )
+                startActivity(intent)
+            }
+        }
+    }
+
 }

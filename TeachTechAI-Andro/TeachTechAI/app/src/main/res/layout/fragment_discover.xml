@@ -1,14 +1,162 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/discoverFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".view.discover.DiscoverFragment">
-
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="match_parent">
+        <ImageView
+            android:id="@+id/discover_background"
+            android:layout_width="0dp"
+            android:layout_height="204dp"
+            android:background="@drawable/background_rectangle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+        <ImageView
+            android:id="@+id/discover_profile"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginStart="32dp"
+            android:src="@drawable/user_blank"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+        <TextView
+            android:id="@+id/discover_tvBagaimanaKabar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bagaimana kabar Anda?"
+            android:fontFamily="@font/poppins_regular"
+            android:textColor="@color/white"
+            android:textSize="11sp"
+            android:layout_marginStart="16dp"
+            app:layout_constraintStart_toEndOf="@id/discover_profile"
+            app:layout_constraintTop_toTopOf="@+id/discover_profile"/>
+        <TextView
+            android:id="@+id/discover_discoverNama"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Loading..."
+            android:fontFamily="@font/poppins_medium"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            android:layout_marginStart="16dp"
+            app:layout_constraintStart_toEndOf="@id/discover_profile"
+            app:layout_constraintTop_toBottomOf="@+id/discover_tvBagaimanaKabar"/>
 
-</FrameLayout>
+        <TextView
+            android:id="@+id/discover_tvLampauiBatasmu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lampaui Batasmu"
+            android:fontFamily="@font/poppins_bold"
+            android:textSize="20sp"
+            android:textColor="@color/white"
+            app:layout_constraintTop_toBottomOf="@+id/discover_profile"
+            app:layout_constraintStart_toStartOf="@+id/discover_profile"
+            android:layout_marginTop="16dp"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TeachTechAI bersamamu"
+            android:fontFamily="@font/poppins_bold"
+            android:layout_marginTop="-8dp"
+            android:textSize="20sp"
+            android:textColor="@color/warning_300"
+            app:layout_constraintTop_toBottomOf="@+id/discover_tvLampauiBatasmu"
+            app:layout_constraintStart_toStartOf="@+id/discover_profile"
+            />
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-20dp"
+            app:cardCornerRadius="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/discover_background"
+            app:cardElevation="8dp">
+            <EditText
+                android:layout_width="305dp"
+                android:layout_height="40dp"
+                android:fontFamily="@font/poppins_regular"
+                android:paddingLeft="10dp"
+                android:drawablePadding="4dp"
+                android:hint="Mengembangkan kreativitas melalui..."
+                android:textSize="11sp"
+                android:textColor="@color/gray_500"
+                android:drawableStart="@drawable/baseline_search_24"
+                android:background="@drawable/search_bar" />
+        </androidx.cardview.widget.CardView>
+        <TextView
+            android:id="@+id/discover_tvTopikTerpopuler"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:layout_marginLeft="20dp"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppins_bold"
+            android:textColor="@color/kaizen_primary"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/discover_background"
+            android:text="Topik Terpopuler" />
+        <TextView
+            android:id="@+id/discover_tvEksplorasi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_regular"
+            android:textSize="11sp"
+            android:textColor="@color/gray_600"
+            android:text="Eksplorasi materi pembelajaran yang paling diminati"
+            app:layout_constraintTop_toBottomOf="@id/discover_tvTopikTerpopuler"
+            app:layout_constraintStart_toStartOf="@id/discover_tvTopikTerpopuler"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/discover_rv"
+            android:layout_marginTop="12dp"
+            android:layout_marginHorizontal="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/discover_tvEksplorasi"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            app:spanCount="2"/>
+
+        <TextView
+            android:id="@+id/discover_tvTopikTerbaru"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="20dp"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppins_bold"
+            android:textColor="@color/kaizen_primary"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/discover_rv"
+            android:text="Topik Terbaru" />
+        <TextView
+            android:id="@+id/discover_tvJelajahi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_regular"
+            android:textSize="11sp"
+            android:textColor="@color/gray_600"
+            android:text="Jelajahi materi pembelajaran terkini"
+            app:layout_constraintTop_toBottomOf="@id/discover_tvTopikTerbaru"
+            app:layout_constraintStart_toStartOf="@id/discover_tvTopikTerbaru"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/discover_rv2"
+            android:layout_marginTop="12dp"
+            android:layout_marginHorizontal="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/discover_tvJelajahi"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            app:spanCount="2"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

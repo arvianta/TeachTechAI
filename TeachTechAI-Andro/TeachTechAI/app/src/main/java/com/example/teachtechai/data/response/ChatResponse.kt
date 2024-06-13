@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 data class ChatResponse(
 
 	@field:SerializedName("data")
-	val data: Data? = null,
+	val data: DataResponse? = null,
 
 	@field:SerializedName("message")
 	val message: String? = null,
@@ -14,11 +14,12 @@ data class ChatResponse(
 	val errors: Any? = null,
 
 	@field:SerializedName("status")
-	val status: Boolean? = null
+	val status: Boolean? = null,
+
+	val isUser: Boolean
 )
 
-data class Data(
-
+data class DataResponse(
 	@field:SerializedName("conversation_id")
 	val conversationId: String? = null,
 
@@ -28,3 +29,4 @@ data class Data(
 	@field:SerializedName("message_id")
 	val messageId: String? = null
 )
+

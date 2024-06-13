@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginBottom="12dp"
     android:id="@+id/ai_response"
     android:layout_alignParentEnd="false"
-    android:layout_width="wrap_content"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/transparent"
+    android:layout_width="219dp"
     android:layout_height="wrap_content"
     app:cardPreventCornerOverlap="false">
     <LinearLayout
@@ -25,16 +28,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                android:textSize="12sp"
                 android:fontFamily="@font/poppins_medium"
                 android:textColor="@color/kaizen_primary"
-                android:text="AI Assistant" />
+                android:text="TeachTechAI Assistant" />
         </LinearLayout>
         <TextView
             android:id="@+id/tvMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/poppins_light"
+            android:justificationMode="inter_word"
+            android:fontFamily="@font/poppins_regular"
             android:layout_marginTop="12dp"
+            android:textSize="13sp"
             android:textColor="@color/black"
             android:text="Hello! How can I assist you today?" />
     </LinearLayout>

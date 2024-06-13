@@ -1,50 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="301dp"
-    android:layout_height="305dp"
+    android:layout_height="395dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_gravity="center"
     android:padding="24dp"
     android:background="@drawable/dialog_box_shape">
 
     <TextView
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         android:id="@+id/textViewTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pendaftaran Sukses"
+        android:text="Yakin ingin keluar?"
         android:textSize="16sp"
         android:textColor="@color/kaizen_primary"
         android:fontFamily="@font/poppins_bold"
         android:layout_gravity="center"/>
 
     <ImageView
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:id="@+id/asset_logout"
+        app:layout_constraintTop_toBottomOf="@+id/textViewTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_width="170dp"
+        android:layout_height="170dp"
+        android:layout_marginTop="16dp"
         android:layout_gravity="center"
-        android:src="@drawable/baseline_check_circle_24"
+        android:src="@drawable/logout_asset"
         android:contentDescription="CheckBox" />
     <TextView
         android:id="@+id/textViewMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Silahkan kembali ke menu login"
+        android:text="Anda selalu bisa masuk kembali kapan saja. Jika ingin beralih akun, Anda bisa menambahkan akun lain."
+        android:textAlignment="center"
         android:textSize="13sp"
         android:fontFamily="@font/poppins_regular"
         android:textColor="@color/gray_900"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/asset_logout"
         android:layout_gravity="center"/>
 
     <Button
-        android:id="@+id/buttonOk"
-        android:layout_width="match_parent"
+        android:id="@+id/buttonKeluar"
+        android:layout_width="112dp"
         android:layout_height="28dp"
         android:layout_marginTop="24dp"
-        android:text="Kembali"
+        android:text="Keluar"
         android:fontFamily="@font/poppins_bold"
         android:textSize="13sp"
         android:textAllCaps="false"
         android:textColor="@color/white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewMessage"
         android:background="@drawable/button_shape"
         android:layout_gravity="center"/>
+    <Button
+        android:id="@+id/buttonBatal"
+        android:layout_width="112dp"
+        android:layout_height="28dp"
+        android:layout_marginTop="24dp"
+        android:text="Batal"
+        android:fontFamily="@font/poppins_bold"
+        android:textSize="13sp"
+        android:textAllCaps="false"
+        android:textColor="@color/kaizen_primary"
+        app:layout_constraintTop_toBottomOf="@+id/textViewMessage"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@drawable/button_shapecancel"
+        android:layout_gravity="center"/>
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

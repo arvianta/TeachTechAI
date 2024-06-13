@@ -1,60 +1,122 @@
 package com.example.teachtechai.view.profile
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.util.TypedValue
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import com.example.teachtechai.MainActivity
 import com.example.teachtechai.R
+import com.example.teachtechai.data.User
+import com.example.teachtechai.data.pref.UserPreference
+import com.example.teachtechai.data.pref.dataStore
+import com.example.teachtechai.databinding.FragmentProfileBinding
+import com.example.teachtechai.view.SharedViewModel
+import com.example.teachtechai.view.ViewModelFactory
+import com.example.teachtechai.view.discover.DiscoverViewModel
+import com.example.teachtechai.view.editprofile.EditProfileFragment
+import kotlinx.coroutines.runBlocking
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ProfileFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ProfileFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+    private lateinit var userPreference: UserPreference
+    private lateinit var binding: FragmentProfileBinding
+    private val logoutViewModel by viewModels<LogoutViewModel> {
+        ViewModelFactory.getInstance(requireContext())
     }
+    private val sharedViewModel : SharedViewModel by activityViewModels()
+    private var alertDialog: AlertDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_profile, container, false)
+        binding = FragmentProfileBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ProfileFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ProfileFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        userPreference = UserPreference.getInstance(requireContext().dataStore)
+        checkToken()
+        observeData()
+        binding.profileTvKeluar.setOnClickListener {
+            showDialogBoxRegister()
+        }
+        navigateToEditProfile()
     }
+
+    private fun navigateToEditProfile() {
+        binding.profileEdit.setOnClickListener {
+            findNavController().navigate(R.id.profileFragment_to_editProfileFragment)
+        }
+    }
+
+    private fun logout(){
+        runBlocking {
+            val token = userPreference.getToken()
+            if (token != null) {
+                logoutViewModel.logoutUser(token)
+            }
+        }
+    }
+    private fun showDialogBoxRegister(){
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_logout, null)
+        val dialogBuilder = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+
+        val alertDialog = dialogBuilder.create()
+        alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        alertDialog.show()
+
+        val width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 301f, resources.displayMetrics).toInt()
+        val height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 395f, resources.displayMetrics).toInt()
+        alertDialog.window?.setLayout(width, height)
+        val buttonKeluar = dialogView.findViewById<Button>(R.id.buttonKeluar)
+        val buttonBatal = dialogView.findViewById<Button>(R.id.buttonBatal)
+        buttonBatal.setOnClickListener {
+            alertDialog.dismiss()
+        }
+        buttonKeluar.setOnClickListener {
+            logout()
+            alertDialog.dismiss()
+            navigateToMainActivity()
+        }
+    }
+    private fun checkToken(){
+        runBlocking {
+            val token = userPreference.getToken()
+            if (token == null){
+                navigateToMainActivity()
+            }
+        }
+    }
+
+    private fun observeData(){
+        Log.d("OBSERVE DATA", "MASUK KESINI")
+        sharedViewModel.user.observe(viewLifecycleOwner){user->
+            Log.d("NAME PROFILE", "$user.name")
+            binding.profileTvName.text = user.name
+        }
+    }
+    private fun navigateToMainActivity(){
+        val intent = Intent(requireContext(), MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        alertDialog?.dismiss()
+        alertDialog = null
+    }
+
 }

@@ -1,27 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
     app:startDestination="@layout/fragment_login">
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.teachtechai.view.login.LoginFragment"
+        tools:layout="@layout/fragment_login"
         android:label="login" />
     <fragment
         android:id="@+id/registerFragment"
         android:name="com.example.teachtechai.view.register.RegisterFragment"
+        tools:layout="@layout/fragment_register"
         android:label="register" />
     <fragment
-        android:id="@+id/chatFragment"
-        android:name="com.example.teachtechai.view.chat.ChatFragment"
-        android:label="chat" />
-    <fragment
         android:id="@+id/verifyFragment"
-        android:name="com.example.teachtechai.view.inputotp.VerifyOtp"
+        android:name="com.example.teachtechai.view.inputotp.VerifyOTP"
+        tools:layout="@layout/fragment_verify_otp"
         android:label="verify" />
     <fragment
         android:id="@+id/forgetPassword"
         android:name="com.example.teachtechai.view.forgetpassword.ForgetPassword"
         android:label="forgetpassword" />
+    <fragment
+        android:id="@+id/discoverFragment"
+        android:name="com.example.teachtechai.view.discover.DiscoverFragment"
+        tools:layout="@layout/fragment_discover"
+        android:label="discover"/>
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.example.teachtechai.view.search.SearchFragment"
+        tools:layout="@layout/fragment_search"
+        android:label="search"/>
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.teachtechai.view.profile.ProfileFragment"
+        tools:layout="@layout/fragment_profile"
+        android:label="profile"/>
 
 </navigation>
