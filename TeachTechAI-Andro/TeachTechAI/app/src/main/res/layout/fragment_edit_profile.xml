@@ -72,6 +72,7 @@
                 android:fontFamily="@font/poppins_regular"
                 android:textSize="13sp"
                 android:padding="8dp"
+                android:inputType="text"
                 android:textCursorDrawable="@drawable/custom_cursor"
                 android:backgroundTint="@color/edit_text_state"
                 android:layout_height="wrap_content"
@@ -108,6 +109,7 @@
                 android:padding="8dp"
                 android:textCursorDrawable="@drawable/custom_cursor"
                 android:backgroundTint="@color/edit_text_state"
+                android:inputType="text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </LinearLayout>
@@ -142,6 +144,7 @@
                 android:textCursorDrawable="@drawable/custom_cursor"
                 android:backgroundTint="@color/edit_text_state"
                 android:drawablePadding="6dp"
+                android:inputType="text"
                 android:drawableStart="@drawable/baseline_calendar_month_24"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />

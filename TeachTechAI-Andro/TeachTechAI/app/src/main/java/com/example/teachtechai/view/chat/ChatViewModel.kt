@@ -18,12 +18,17 @@ class ChatViewModel : ViewModel() {
 
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage : LiveData<String> = _errorMessage
+
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading : LiveData<Boolean> = _isLoading
+
     fun getChatResponse(token : String, prompt: String) {
-        val call = ApiConfig.getApiService().getChatResponse("Bearer $token", "Menentukan Metode Pembelajaran Di Kelas", prompt, "TeachTechAI")
+        _isLoading.value = true
+        val call = ApiConfig.getApiService().getChatResponse("Bearer $token", "Menentukan Metode Pembelajaran Di Kelas", prompt, "Vermillion8631/llama-3-teachtechai-gptq")
         call.enqueue(object : Callback<ChatResponse> {
             override fun onResponse(call: Call<ChatResponse>, response: Response<ChatResponse>) {
                 if(response.isSuccessful){
-                    Log.d("TES", "${response.body()}")
+                    _isLoading.value = false
                     _chatMessage.value = response.body()
                 }else{
                     _errorMessage.value = response.message()

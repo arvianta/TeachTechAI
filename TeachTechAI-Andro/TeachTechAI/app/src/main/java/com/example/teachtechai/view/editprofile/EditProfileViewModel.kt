@@ -1,13 +1,11 @@
 package com.example.teachtechai.view.editprofile
 
 import android.app.Application
-import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.example.teachtechai.data.response.UpdateUserResponse
+import com.example.teachtechai.data.response.ChangePasswordResponse
 import com.example.teachtechai.data.response.UploadProfileResponse
 import com.example.teachtechai.data.retrofit.ApiConfig
 import com.example.teachtechai.view.utils.reduceFileImage
@@ -15,17 +13,13 @@ import com.example.teachtechai.view.utils.uriToFile
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
 
 class EditProfileViewModel (application: Application) :AndroidViewModel(application){
-    private val _updateUserResponse = MutableLiveData<UpdateUserResponse>()
-    val updateUserResponse : LiveData<UpdateUserResponse> = _updateUserResponse
+    private val _updateUserResponse = MutableLiveData<ChangePasswordResponse>()
+    val updateUserResponse : LiveData<ChangePasswordResponse> = _updateUserResponse
 
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage : LiveData<String> = _errorMessage
@@ -38,10 +32,10 @@ class EditProfileViewModel (application: Application) :AndroidViewModel(applicat
 
     fun updateUser(token : String, name : String, asal_instansi : String, date_of_birth : String){
         val call = ApiConfig.getApiService().updateuser("Bearer $token",name, asal_instansi, date_of_birth)
-        call.enqueue(object : Callback<UpdateUserResponse> {
+        call.enqueue(object : Callback<ChangePasswordResponse> {
             override fun onResponse(
-                call: Call<UpdateUserResponse>,
-                response: Response<UpdateUserResponse>
+                call: Call<ChangePasswordResponse>,
+                response: Response<ChangePasswordResponse>
             ) {
                 if(response.isSuccessful){
                     _updateUserResponse.value = response.body()
@@ -50,7 +44,7 @@ class EditProfileViewModel (application: Application) :AndroidViewModel(applicat
                 }
             }
 
-            override fun onFailure(call: Call<UpdateUserResponse>, t: Throwable) {
+            override fun onFailure(call: Call<ChangePasswordResponse>, t: Throwable) {
                 _errorMessage.value = t.message
             }
         })
@@ -62,7 +56,7 @@ class EditProfileViewModel (application: Application) :AndroidViewModel(applicat
 
             val requestImageFile = imageFile.asRequestBody("image/jpeg".toMediaType())
             val multipartBody = MultipartBody.Part.createFormData(
-                "photo",
+                "file",
                 imageFile.name,
                 requestImageFile
             )

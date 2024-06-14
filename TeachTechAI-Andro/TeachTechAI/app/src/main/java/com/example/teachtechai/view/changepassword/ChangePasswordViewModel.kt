@@ -1,4 +1,4 @@
-package com.example.teachtechai.view.forgetpassword
+package com.example.teachtechai.view.changepassword
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,22 +9,22 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class ForgetViewModel : ViewModel() {
-    private val _forgetPasswordResponse = MutableLiveData<ChangePasswordResponse>()
-    val forgetPasswordResponse : LiveData<ChangePasswordResponse> = _forgetPasswordResponse
+class ChangePasswordViewModel : ViewModel() {
+    private val _changeResponse = MutableLiveData<ChangePasswordResponse>()
+    val changeResponse : LiveData<ChangePasswordResponse> = _changeResponse
 
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage : LiveData<String> = _errorMessage
 
-    fun forgetPassword(email : String){
-        val call = ApiConfig.getApiService().forgetpassword(email)
+    fun changePassword(token : String, old_password : String, new_password : String){
+        val call = ApiConfig.getApiService().changepassword("Bearer $token", old_password, new_password)
         call.enqueue(object : Callback<ChangePasswordResponse> {
             override fun onResponse(
                 call: Call<ChangePasswordResponse>,
                 response: Response<ChangePasswordResponse>
             ) {
                 if(response.isSuccessful){
-                    _forgetPasswordResponse.value = response.body()
+                    _changeResponse.value = response.body()
                 }else{
                     _errorMessage.value = response.message()
                 }
