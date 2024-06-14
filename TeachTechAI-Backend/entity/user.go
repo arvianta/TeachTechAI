@@ -19,9 +19,9 @@ type User struct {
 	AsalInstansi   string    `gorm:"type:varchar(255);" json:"asal_instansi"`
 	DateOfBirth    time.Time `gorm:"type:date;" json:"date_of_birth"`
 	IsVerified     bool      `gorm:"type:boolean;default:false" json:"is_verified"`
-	SessionToken   string    `gorm:"type:varchar(255);" json:"session_token"`
+	SessionToken   string    `gorm:"type:text;" json:"session_token"`
 	STExpires      time.Time `gorm:"type:timestamp;" json:"st_expires"`
-	RefreshToken   string    `gorm:"type:varchar(255);" json:"refresh_token"`
+	RefreshToken   string    `gorm:"type:text;" json:"refresh_token"`
 	RTExpires      time.Time `gorm:"type:timestamp;" json:"rt_expires"`
 
 	Timestamp

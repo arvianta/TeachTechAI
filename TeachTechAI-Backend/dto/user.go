@@ -78,6 +78,16 @@ type (
 		Password string    `json:"password" form:"password" binding:"required"`
 	}
 
+	UserMeResponseDTO struct {
+		ID           uuid.UUID `json:"id"`
+		Email        string    `json:"email"`
+		Name         string    `json:"name"`
+		AsalInstansi string    `json:"asal_instansi"`
+		DateOfBirth  time.Time `json:"date_of_birth"`
+		IsVerified   bool      `json:"is_verified"`
+		RoleID       string    `json:"role_id"`
+	}
+
 	UserUpdateInfoDTO struct {
 		ID uuid.UUID `gorm:"type:char(36);primary_key;not_null" json:"id"`
 		// GoogleID     string    `gorm:"type:varchar(255);" json:"google_id"`
