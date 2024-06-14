@@ -27,7 +27,7 @@ type UserService interface {
 	UpdateUser(ctx context.Context, userDTO dto.UserUpdateInfoDTO) error
 	ChangePassword(ctx context.Context, userID uuid.UUID, passwordDTO dto.UserChangePassword) error
 	ForgotPassword(ctx context.Context, forgotPasswordDTO dto.ForgotPassword) error
-	MeUser(ctx context.Context, userID uuid.UUID) (entity.User, error)
+	MeUser(ctx context.Context, userID uuid.UUID) (dto.UserMeResponseDTO, error)
 	FindUserRoleByRoleID(roleID uuid.UUID) (string, error)
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
 	StoreUserToken(ctx context.Context, userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error
@@ -306,8 +306,23 @@ func (us *userService) ForgotPassword(ctx context.Context, forgotPasswordDTO dto
 	return nil
 }
 
-func (us *userService) MeUser(ctx context.Context, userID uuid.UUID) (entity.User, error) {
-	return us.userRepository.FindUserByID(ctx, userID)
+func (us *userService) MeUser(ctx context.Context, userID uuid.UUID) (dto.UserMeResponseDTO, error) {
+	user, err := us.userRepository.FindUserByID(ctx, userID)
+	if err != nil {
+		return dto.UserMeResponseDTO{}, err
+	}
+
+	result := dto.UserMeResponseDTO{
+		ID:           user.ID,
+		Email:        user.Email,
+		Name:         user.Name,
+		AsalInstansi: user.AsalInstansi,
+		DateOfBirth:  user.DateOfBirth,
+		IsVerified:   user.IsVerified,
+		RoleID:       user.RoleID,
+	}
+
+	return result, nil
 }
 
 func (us *userService) FindUserRoleByRoleID(roleID uuid.UUID) (string, error) {

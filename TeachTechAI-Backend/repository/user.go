@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"teach-tech-ai/entity"
+	"teach-tech-ai/utils"
 	"time"
 
 	"github.com/google/uuid"
@@ -87,9 +88,20 @@ func (db *userConnection) UpdateUser(ctx context.Context, user entity.User) erro
 
 func (db *userConnection) StoreUserToken(ctx context.Context, userID uuid.UUID, sessionToken string, refreshToken string, atx time.Time, rtx time.Time) error {
 	user := entity.User{ID: userID}
+
+	encryptedST, err := utils.AESEncrypt(sessionToken)
+	if err != nil {
+		return err
+	}
+
+	encryptedRT, err := utils.AESEncrypt(refreshToken)
+	if err != nil {
+		return err
+	}
+
 	uc := db.connection.WithContext(ctx).Model(&user).Updates(map[string]interface{}{
-		"session_token": sessionToken,
-		"refresh_token": refreshToken,
+		"session_token": encryptedST,
+		"refresh_token": encryptedRT,
 		"st_expires":    atx,
 		"rt_expires":    rtx,
 	})
@@ -132,7 +144,13 @@ func (db *userConnection) GetUserSessionToken(userID uuid.UUID) (string, error) 
 	if ux.Error != nil {
 		return "", ux.Error
 	}
-	return user.SessionToken, nil
+
+	decryptedST, err := utils.AESDecrypt(user.SessionToken)
+	if err != nil {
+		return "", err
+	}
+
+	return decryptedST, nil
 }
 
 func (db *userConnection) UpdateProfilePicture(ctx context.Context, userID uuid.UUID, url string) error {
