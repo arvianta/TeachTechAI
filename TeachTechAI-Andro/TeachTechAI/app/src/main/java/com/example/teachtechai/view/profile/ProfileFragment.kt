@@ -15,6 +15,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.teachtechai.MainActivity
@@ -133,5 +134,22 @@ class ProfileFragment : Fragment() {
         super.onDestroy()
         alertDialog?.dismiss()
         alertDialog = null
+    }
+
+    private fun getProfilePicture(){
+        runBlocking {
+            val token = userPreference.getToken()
+            val imageUrl = "https://teachtechai.et.r.appspot.com/api/user/profile-picture"
+            glideUrl = GlideUrl(
+                imageUrl,
+                LazyHeaders.Builder()
+                    .addHeader("Authorization","Bearer $token")
+                    .build()
+            )
+        }
+        Glide.with(this)
+            .load(glideUrl)
+            .transform(CircleCrop(), CenterCrop())
+            .into(binding.discoverProfile)
     }
 }
