@@ -89,6 +89,7 @@ class ChatActivity : AppCompatActivity() {
 
     private fun checkMessageAvailibility() {
         if(message.isNotEmpty()){
+            binding.cardviewTitle.visibility = View.INVISIBLE
             binding.cardTextview.visibility = View.INVISIBLE
             binding.card1.visibility = View.INVISIBLE
             binding.card2.visibility = View.INVISIBLE
@@ -96,6 +97,7 @@ class ChatActivity : AppCompatActivity() {
 
             binding.recyclerView.visibility = View.VISIBLE
         }else{
+            binding.cardviewTitle.visibility = View.VISIBLE
             binding.cardTextview.visibility = View.VISIBLE
             binding.card1.visibility = View.VISIBLE
             binding.card2.visibility = View.VISIBLE

@@ -21,6 +21,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.teachtechai.R
+import com.example.teachtechai.data.User
 import com.example.teachtechai.data.pref.UserPreference
 import com.example.teachtechai.data.pref.dataStore
 import com.example.teachtechai.databinding.FragmentEditProfileBinding
@@ -38,7 +39,6 @@ class EditProfileFragment : Fragment() {
     private var selectCode = 101
     private var currentImageUri : Uri? = null
     private val sharedViewModel : SharedViewModel by activityViewModels()
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -118,6 +118,9 @@ class EditProfileFragment : Fragment() {
                 showImage()
             }
         }
+    }
+    private fun setUser(){
+
     }
     private fun updateUser(){
         runBlocking {
