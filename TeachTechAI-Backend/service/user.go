@@ -59,7 +59,7 @@ func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateD
 			return entity.User{}, err
 		}
 		if err == dto.ErrAccountNotVerified {
-			_, err := us.otpEmailService.SendOTPByEmail(ctx, userDTO.Email)
+			_, err := us.otpEmailService.SendOTPByEmail(ctx, userDTO.Email, userDTO.Name)
 			if err != nil {
 				return entity.User{}, err
 			}
@@ -85,7 +85,7 @@ func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateD
 		return user, err
 	}
 
-	_, err = us.otpEmailService.SendOTPByEmail(ctx, createdUser.Email)
+	_, err = us.otpEmailService.SendOTPByEmail(ctx, createdUser.Email, createdUser.Name)
 	if err != nil {
 		return createdUser, err
 	}
@@ -103,7 +103,7 @@ func (us *userService) SendUserOTPByEmail(ctx context.Context, email string) err
 		return dto.ErrAccountAlreadyVerified
 	}
 
-	_, err = us.otpEmailService.SendOTPByEmail(ctx, user.Email)
+	_, err = us.otpEmailService.SendOTPByEmail(ctx, user.Email, user.Name)
 	if err != nil {
 		return err
 	}

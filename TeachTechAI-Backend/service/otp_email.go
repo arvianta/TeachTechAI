@@ -14,7 +14,7 @@ import (
 )
 
 type OTPEmailService interface {
-	SendOTPByEmail(ctx context.Context, email string) (string, error)
+	SendOTPByEmail(ctx context.Context, email string, name string) (string, error)
 	VerifyOTPByEmail(ctx context.Context, email, otp string) error
 }
 
@@ -32,7 +32,7 @@ func GenerateOTP() string {
 	return fmt.Sprintf("%06d", rand.Intn(1000000))
 }
 
-func (oes *otpEmailService) SendOTPByEmail(ctx context.Context, email string) (string, error) {
+func (oes *otpEmailService) SendOTPByEmail(ctx context.Context, email string, name string) (string, error) {
 	existingOTP, err := oes.otpRepository.GetValidOTPByEmail(ctx, email)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return "", err
@@ -85,10 +85,12 @@ func (oes *otpEmailService) SendOTPByEmail(ctx context.Context, email string) (s
 	}
 
 	// Send OTP via email
-	subject := "TeachTechAI OTP Verification"
-	body := fmt.Sprintf("Your OTP for verification: %s", randomOTP)
+	draftEmail, err := utils.BuildMail(email, name, randomOTP)
+	if err != nil {
+		return "", err
+	}
 
-	err = utils.SendMail(email, subject, body)
+	err = utils.SendMail(email, draftEmail["subject"], draftEmail["body"])
 	if err != nil {
 		return "", err
 	}
