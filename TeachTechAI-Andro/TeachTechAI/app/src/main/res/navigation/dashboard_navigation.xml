@@ -31,5 +31,17 @@
         <action
             android:id="@+id/profileFragment_to_editProfileFragment"
             app:destination="@+id/editProfileFragment" />
+        <action
+            android:id="@+id/profileFragment_to_changePasswordFragment"
+            app:destination="@+id/changePasswordFragment"/>
+    </fragment>
+    <fragment
+        android:id="@+id/changePasswordFragment"
+        android:name="com.example.teachtechai.view.changepassword.ChangePasswordFragment"
+        tools:layout="@layout/fragment_change_password"
+        android:label="changepassword">
+        <action
+            android:id="@+id/changePasswordFragment_to_profileFragment"
+            app:destination="@+id/profileFragment"/>
     </fragment>
 </navigation>

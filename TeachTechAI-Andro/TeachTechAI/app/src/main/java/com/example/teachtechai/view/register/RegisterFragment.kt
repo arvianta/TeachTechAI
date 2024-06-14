@@ -19,9 +19,11 @@ import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.example.teachtechai.R
 import com.example.teachtechai.databinding.FragmentRegisterBinding
 import com.example.teachtechai.view.inputotp.VerifyOTP
+import com.example.teachtechai.view.login.LoginFragment
 
 class RegisterFragment : Fragment() {
     private lateinit var binding : FragmentRegisterBinding
@@ -43,16 +45,8 @@ class RegisterFragment : Fragment() {
         emailpasswordValidation()
         buttonRegister()
         observeData()
+        navigateToLogin()
     }
-
-    private fun observeData() {
-        registerViewModel.otpResponse.observe(viewLifecycleOwner){response ->
-            if(response.status == true){
-                navigateToVerifyOTP(verifyOTP)
-            }
-        }
-    }
-
     private fun buttonRegister() {
         binding.registerBtnDaftar.setOnClickListener {
             val name = binding.registerEditNama.text.toString()
@@ -64,10 +58,29 @@ class RegisterFragment : Fragment() {
             bundle.putString("email", email)
             verifyOTP.arguments = bundle
             registerViewModel.registerUser(name, email, password)
-            registerViewModel.sendOTP(email)
         }
     }
 
+    private fun navigateToLogin(){
+        binding.registerTvMasukSekarang.setOnClickListener{
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, LoginFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+    }
+    private fun observeData() {
+        registerViewModel.registerResult.observe(viewLifecycleOwner){response ->
+            if(response.status == true){
+                navigateToVerifyOTP(verifyOTP)
+            }
+        }
+        registerViewModel.errorMessage.observe(viewLifecycleOwner){errorMessage->
+            if(errorMessage =="akun belum diverifikasi. OTP baru telah dikirim"){
+                navigateToVerifyOTP(verifyOTP)
+            }
+        }
+    }
     private fun emailpasswordValidation() {
         val namaEditText = binding.registerEditNama
         val emailEditText = binding.registerEditEmail

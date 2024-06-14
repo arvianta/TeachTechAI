@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
@@ -23,6 +24,7 @@ import com.example.teachtechai.R
 import com.example.teachtechai.data.pref.UserPreference
 import com.example.teachtechai.data.pref.dataStore
 import com.example.teachtechai.databinding.FragmentEditProfileBinding
+import com.example.teachtechai.view.SharedViewModel
 import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -35,6 +37,8 @@ class EditProfileFragment : Fragment() {
     private lateinit var userPreference: UserPreference
     private var selectCode = 101
     private var currentImageUri : Uri? = null
+    private val sharedViewModel : SharedViewModel by activityViewModels()
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -51,8 +55,22 @@ class EditProfileFragment : Fragment() {
         openGallery()
         updateUser()
         uploadProfile()
+        observeSetData()
         observeData()
     }
+
+    private fun observeSetData() {
+        sharedViewModel.user.observe(viewLifecycleOwner){user->
+            binding.editName.setText(user.name)
+            Glide.with(this)
+                .load(user.glideUrl)
+                .transform(CenterCrop(), CircleCrop())
+                .into(binding.editProfile)
+            binding.editAsalInstansi.setText(user.nama_instansi)
+            binding.editTanggalLahir.setText(user.tanggal_lahir)
+        }
+    }
+
     private fun uploadProfile(){
         runBlocking {
             val token = userPreference.getToken()
@@ -76,6 +94,7 @@ class EditProfileFragment : Fragment() {
                 selectCode ->{
                     val selectedImageUri = data?.data
                     currentImageUri = selectedImageUri
+                    uploadProfile()
                 }
             }
         }

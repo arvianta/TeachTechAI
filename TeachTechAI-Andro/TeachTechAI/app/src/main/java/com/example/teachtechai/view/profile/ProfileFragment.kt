@@ -13,6 +13,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.teachtechai.MainActivity
 import com.example.teachtechai.R
 import com.example.teachtechai.data.User
@@ -33,6 +37,9 @@ class ProfileFragment : Fragment() {
     }
     private val sharedViewModel : SharedViewModel by activityViewModels()
     private var alertDialog: AlertDialog? = null
+    private val discoverViewModel : DiscoverViewModel by viewModels()
+
+    var glideUrl : GlideUrl? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,6 +59,13 @@ class ProfileFragment : Fragment() {
             showDialogBoxRegister()
         }
         navigateToEditProfile()
+        navigateToChangePassword()
+    }
+
+    private fun navigateToChangePassword() {
+        binding.profileButtonChangePassword.setOnClickListener {
+            findNavController().navigate(R.id.profileFragment_to_changePasswordFragment)
+        }
     }
 
     private fun navigateToEditProfile() {
@@ -101,10 +115,12 @@ class ProfileFragment : Fragment() {
     }
 
     private fun observeData(){
-        Log.d("OBSERVE DATA", "MASUK KESINI")
         sharedViewModel.user.observe(viewLifecycleOwner){user->
-            Log.d("NAME PROFILE", "$user.name")
             binding.profileTvName.text = user.name
+            Glide.with(this)
+                .load(user.glideUrl)
+                .transform(CenterCrop(), CircleCrop())
+                .into(binding.discoverProfile)
         }
     }
     private fun navigateToMainActivity(){
@@ -118,5 +134,4 @@ class ProfileFragment : Fragment() {
         alertDialog?.dismiss()
         alertDialog = null
     }
-
 }

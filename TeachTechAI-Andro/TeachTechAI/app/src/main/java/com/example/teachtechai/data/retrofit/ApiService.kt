@@ -1,12 +1,13 @@
 package com.example.teachtechai.data.retrofit
 
+import com.example.teachtechai.data.response.ChangePasswordResponse
 import com.example.teachtechai.data.response.ChatResponse
-import com.example.teachtechai.data.response.UpdateUserResponse
 import com.example.teachtechai.data.response.GetMeResponse
 import com.example.teachtechai.data.response.LoginResponse
 import com.example.teachtechai.data.response.LogoutResponse
 import com.example.teachtechai.data.response.OTPResponse
 import com.example.teachtechai.data.response.RegisterResponse
+import com.example.teachtechai.data.response.TopicResponse
 import com.example.teachtechai.data.response.UploadProfileResponse
 import com.example.teachtechai.data.response.VerifyOTPResponse
 import okhttp3.MultipartBody
@@ -44,7 +45,7 @@ interface ApiService {
     @POST("user/forgot-password")
     fun forgetpassword(
         @Field("email") email : String
-    ): Call<UpdateUserResponse>
+    ): Call<ChangePasswordResponse>
 
     @FormUrlEncoded
     @POST("user/send-otp")
@@ -66,12 +67,25 @@ interface ApiService {
         @Field("name") name : String,
         @Field("asal_instansi") asal_instansi : String,
         @Field("date_of_birth") date_of_birth : String
-    ): Call<UpdateUserResponse>
+    ): Call<ChangePasswordResponse>
+
+    @FormUrlEncoded
+    @PATCH("user/change-password")
+    fun changepassword(
+        @Header("Authorization") token : String,
+        @Field("old_password") old_password : String,
+        @Field("new_password") new_password : String
+    ): Call<ChangePasswordResponse>
 
     @GET("user/me")
     fun getme(
         @Header("Authorization") token : String
     ):Call<GetMeResponse>
+
+    @GET("conversation/me")
+    fun getAllConversations(
+        @Header("Authorization") token : String
+    ):Call<TopicResponse>
 
     @FormUrlEncoded
     @POST("message/prompt")

@@ -48,6 +48,7 @@
             android:textSize="14sp"
             android:drawableStart="@drawable/baseline_person_24"
             android:hint="Nama"
+            android:inputType="text"
             android:drawablePadding="12dp"
             android:background="@drawable/custom_inputtext"/>
         <EditText
@@ -59,6 +60,7 @@
             android:textSize="14sp"
             android:drawableStart="@drawable/baseline_email_24"
             android:drawablePadding="12dp"
+            android:inputType="textEmailAddress"
             android:hint="Email"
             android:background="@drawable/custom_inputtext"/>
         <EditText

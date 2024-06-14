@@ -9,7 +9,7 @@
     tools:context=".view.login.LoginFragment">
 
     <ImageView
-        android:id="@+id/login_logo"
+        android:id="@+id/logoKaizen"
         android:layout_width="64dp"
         android:layout_height="64dp"
         android:layout_marginTop="8dp"
@@ -25,7 +25,7 @@
         android:fontFamily="@font/poppins_bold"
         android:textColor="@color/kaizen_primary"
         android:textSize="20sp"
-        app:layout_constraintTop_toBottomOf="@+id/login_logo"
+        app:layout_constraintTop_toBottomOf="@+id/logoKaizen"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:text="TeachTechAI" />
@@ -61,6 +61,7 @@
             android:textSize="14sp"
             android:drawableStart="@drawable/baseline_email_24"
             android:drawablePadding="12dp"
+            android:inputType="textEmailAddress"
             android:hint="Email"
             android:background="@drawable/custom_inputtext"/>
         <RelativeLayout
@@ -71,8 +72,9 @@
                 android:id="@+id/login_editPassword"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:padding="10dp"
-                android:textSize="14sp"
+                android:paddingVertical="10dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="20dp"
                 android:drawablePadding="12dp"
                 android:drawableStart="@drawable/baseline_lock_24"
                 android:inputType="textPassword"

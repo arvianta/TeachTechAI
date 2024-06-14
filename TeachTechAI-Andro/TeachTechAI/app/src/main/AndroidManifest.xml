@@ -14,9 +14,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TeachTechAI"
         tools:targetApi="31">
+
         <activity
             android:name=".view.splash.SplashActivity"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,17 +26,17 @@
         </activity>
         <activity
             android:name=".view.chat.ChatActivity"
+            android:windowSoftInputMode="adjustPan"
             android:exported="false" />
         <activity
             android:name=".view.dashboard.DashboardActivity"
             android:exported="true"
             android:label="TeachTechAI"
-            android:theme="@style/Theme.TeachTechAI">
-        </activity>
+            android:theme="@style/Theme.TeachTechAI"></activity>
         <activity
             android:name=".MainActivity"
-            android:noHistory="true"
-            android:exported="true" />
+            android:exported="true"
+            android:noHistory="true" />
     </application>
 
 </manifest>

@@ -12,7 +12,5 @@ class SharedViewModel : ViewModel() {
 
     fun setUser(user: User) {
         _user.value = user
-        Log.d("USER", "${user}")
-
     }
 }

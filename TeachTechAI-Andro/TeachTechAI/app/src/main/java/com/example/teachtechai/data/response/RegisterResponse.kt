@@ -46,17 +46,9 @@ data class VerifyOTPResponse(
 	val status: Boolean? = null
 )
 
-data class UpdateUserResponse(
-
-	@field:SerializedName("data")
-	val data: Data? = null,
-
-	@field:SerializedName("message")
-	val message: String? = null,
-
-	@field:SerializedName("errors")
-	val errors: Any? = null,
-
-	@field:SerializedName("status")
-	val status: Boolean? = null
+data class ApiError(
+	val status: Boolean,
+	val message: String,
+	val error: String
 )
+

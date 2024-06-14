@@ -101,9 +101,9 @@ class LoginFragment : Fragment() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
-        passwordToggle.setOnClickListener{
-            togglePasswordVisiblity(passwordEditText, passwordToggle)
-        }
+//        passwordToggle.setOnClickListener{
+//            togglePasswordVisiblity(passwordEditText, passwordToggle)
+//        }
     }
 
     private fun checkToken(){
@@ -168,15 +168,15 @@ class LoginFragment : Fragment() {
             passwordEditText.error = null
         }
     }
-    private fun togglePasswordVisiblity(passwordEditText: EditText, passwordToggle : ImageView){
-        if(isVisiblity == true){
-            passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT
-            passwordToggle.setImageResource(R.drawable.baseline_visibility_24)
-        }else{
-            passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            passwordToggle.setImageResource(R.drawable.baseline_visibility_off_24)
-        }
-        passwordEditText.setSelection(passwordEditText.text.length)
-        isVisiblity = !isVisiblity
-    }
+//    private fun togglePasswordVisiblity(passwordEditText: EditText, passwordToggle : ImageView){
+//        if(isVisiblity == true){
+//            passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT
+//            passwordToggle.setImageResource(R.drawable.baseline_visibility_24)
+//        }else{
+//            passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+//            passwordToggle.setImageResource(R.drawable.baseline_visibility_off_24)
+//        }
+//        passwordEditText.setSelection(passwordEditText.text.length)
+//        isVisiblity = !isVisiblity
+//    }
 }
